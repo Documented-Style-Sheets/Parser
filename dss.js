@@ -1,3 +1,29 @@
+/**
+ * DSS CLI Tool
+ * @author Darcy Clarke
+ *
+ * Dual licensed under the MIT and GPL licenses.
+ *
+ * Based on KSS: https://github.com/kneath/kss
+ * @author Kyle Neath
+ */
+
+var program = require('commander');
+
+program
+  .version('0.0.1')
+
+program
+  .command('dss')
+  .option('build, -b, --build', 'Build Documentation')
+  .description('Build documentation')
+  .action(function(cmd, options){
+    console.log('building...', cmd, options);
+  })
+
+program.parse(process.argv);
+
+/*
 (function() {
 	
   var KssStateGenerator;
@@ -46,3 +72,5 @@
   new KssStateGenerator;
 
 }).call(this);
+
+*/

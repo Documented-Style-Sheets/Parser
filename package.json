@@ -1,0 +1,30 @@
+{
+  "name": "DSS Documented Style Sheets",
+  "description": "A command line build tool utilizing KSS for Documenting Style Sheets.",
+  "version": "0.0.1",
+  "author": "Darcy Clarke (http://darcyclarke.me/)",
+  "homepage": "http://github.com/darcyclarke/dss",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/darcyclarke/dss.git"
+  },
+  "bugs": {
+    "url" : "http://github.com/darcyclarke/dss/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://github.com/cowboy/grunt/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "dss",
+  "bin": "bin/dss",
+  "engines": {
+    "node": ">= 0.6.0"
+  },
+  "preferGlobal": true,
+  "keywords": ["css","kss","dss","styles","docs","documentation","cli"],
+  "dependencies": {
+    "commander": "~1.0.0"
+  }
+}

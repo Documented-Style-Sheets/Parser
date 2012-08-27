@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+// Require nod path lib
+var path = require('path');
+
+// Borrowed from grunt.js
+var dir = path.resolve((function(dirpath, filename){]
+	var filepath = path.join(dirpath, filename);
+	if (path.existsSync(filepath)) { return filepath; }
+	var parentpath = path.resolve(dirpath, '..');
+	return parentpath === dirpath ? null : findup(parentpath, filename)
+})(process.cwd(), 'dss.js'));
+
+if (!path.existsSync(dir)) { dir = '../dss'; }
+
+// Run DSS
+require(dir).cli();
