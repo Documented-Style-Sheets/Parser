@@ -8,20 +8,23 @@
  * @author Kyle Neath
  */
 
+var path = require('path');
+  
 var program = require('commander');
+  
+var cli = function(){
+  
+  program
+    .version('0.0.1')
+    .command('dss')
+    .option('build, -b, --build', 'Build Documentation')
+    .description('Build documentation')
+    .action(function(cmd, options){
+      console.log('building...', cmd, options);
+    });
+  program.parse(process.argv);
 
-program
-  .version('0.0.1')
-
-program
-  .command('dss')
-  .option('build, -b, --build', 'Build Documentation')
-  .description('Build documentation')
-  .action(function(cmd, options){
-    console.log('building...', cmd, options);
-  })
-
-program.parse(process.argv);
+};
 
 /*
 (function() {
