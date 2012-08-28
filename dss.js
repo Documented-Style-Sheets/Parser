@@ -1,5 +1,5 @@
 /**
- * Command Line Tool for DSS (Documented Style Sheets)
+ * Command Line Tool for _dss (Documented Style Sheets)
  * @author Darcy Clarke
  * @version 0.0.1
  * 
@@ -13,102 +13,134 @@
  * @author Kyle Neath
  */
 
+// Include dependancies
+var mustache = require('mu2');
 var lazy = require('lazy');
 var fs = require('fs');
 
-/*
-var path = require('path');
-var program = require('commander');
-var cli = function(){
-  
-  program
-    .version('0.0.1')
-    .command('dss')
-    .option('build, -b, --build', 'Build Documentation')
-    .description('Build documentation')
-    .action(function(cmd, options){
-      console.log('building...', cmd, options);
-    });
-  program.parse(process.argv);
-
-};
-*/
-
-////////////////////////////////////////////////////////////////////////////
-// DSS
-////////////////////////////////////////////////////////////////////////////
-var DSS = (function(){
+// DSS Object
+var dss = (function(){
 
   // Store reference
-  var dss = function(){};
+  var _dss = function(){};
 
-  ////////////////////////////////////////////////////////////////////////////
-  // Utilities
-  ////////////////////////////////////////////////////////////////////////////
-
-  // Trim
-  dss.trim = function(){
-    return this.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+  /*
+   * Trim whitespace from string
+   *
+   * @param (String) The string to be trimmed
+   * @return (String) The trimmed string
+   */
+  _dss.trim = function(str){
+    return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
   };
 
-  // Last
-  dss.last = function(arr){
+  /*
+   * Get last item in array
+   *
+   * @param (Array) The array to use
+   * @return (Object) The last item in the array
+   */
+  _dss.last = function(arr){
     return arr[arr.length - 1];
   };
 
-  // Squeeze
-  dss.squeeze = function(str, def){
+  /*
+   * Squeeze unnecessary extra characters/string
+   *
+   * @param (String) The string to be squeeze
+   * @param (String) The string to be matched
+   * @return (String) The modified string
+   */
+  _dss.squeeze = function(str, def){
     return str.replace(/\s{2,}/g, def); 
   };
 
-  ////////////////////////////////////////////////////////////////////////////
-  // Takes and file path of a text file and extracts comments from it.
-  ////////////////////////////////////////////////////////////////////////////
-  dss.CommentParser = function(file_path, options){
+  /*
+   * Takes and file path of a text file and extracts comments from it.
+   *
+   * @param (String) path to file
+   * @param (Object) options
+   */
+  _dss.CommentParser = (function(){
 
-    this.options = (options) ? options : {};
-    this.options.preserve_whitespace = (options.preserve_whitespace) ? options.preserve_whitespace : false;
-    this._file_path = file_path;
-    this._blocks = [];
-    this._parsed = false;
-  
-    // Is this a single-line comment? // This style
-    this.single_line_comment = function(line){
+    var _this = function(file_path, options){
+      this.options = (options) ? options : {};
+      this.options.preserve_whitespace = (options.preserve_whitespace) ? options.preserve_whitespace : false;
+      this._file_path = file_path;
+      this._blocks = [];
+      this._parsed = false;
+    };
+
+    /*
+     * Check for single-line comment
+     *
+     * @param (String) line to parse/check
+     * @return (Boolean) result of check
+     */
+    _this.single_line_comment = function(line){
       return !!(line =~ /^\s*\/\//);
     };
 
-    // Is this the start of a multi-line comment? /* This style */
-    this.start_multi_line_comment = function(line){
+    /*
+     * Checks for start of a multi-line comment
+     *
+     * @param (String) line to parse/check
+     * @return (Boolean) result of check
+     */
+    _this.start_multi_line_comment = function(line){
       return !!(line =~ /^\s*\/\*/);
     };
 
-    // Is this the end of a multi-line comment? /* This style */
-    this.end_multi_line_comment = function(line){
+    /*
+     * Check for end of a multi-line comment
+     *
+     * @parse (String) line to parse/check
+     * @return (Boolean) result of check
+     */
+    _this.end_multi_line_comment = function(line){
       if(this.single_line_comment(line))
         return false;
       return !!(line =~ /.*\*\//);
     };
 
-    // Removes comment identifiers for single-line comments.
-    this.parse_single_line = function(line){
+    /*
+     * Removes comment identifiers for single-line comments.
+     *
+     * @param (String) line to parse/check
+     * @return (Boolean) result of check
+     */
+    _this.parse_single_line = function(line){
       return line.replace(/\s*\/\//, '');
     };
 
-    // Remove comment identifiers for multi-line comments.
-    this.parse_multi_line = function(line){
+    /* 
+     * Remove comment identifiers for multi-line comments.
+     *
+     * @param (String) line to parse/check
+     * @return (Boolean) result of check
+     */
+    _this.parse_multi_line = function(line){
       cleaned = line.replace(/\s*\/\*/, '');
       return cleaned.replace(/\*\//, '');
     };
 
-    // The different sections of parsed comment text. A section is
-    // either a multi-line comment block's content, or consecutive lines of
-    // single-line comments.
-    this.blocks = function(){
+    /*
+     * The different sections of parsed comment text. A section is
+     * either a multi-line comment block's content, or consecutive lines of
+     * single-line comments.
+     *
+     * @return (Array) The array of parsed lines/blocks
+     */
+    _this.blocks = function(){
       return this._parsed ? this._blocks : this.parse_blocks;
     };
 
-    //Parse the file for comment blocks and populate them into @blocks.
-    this.parse_blocks = function(){
+    /* 
+     * Parse the file for comment blocks and populate them into this._blocks.
+     *
+     * @return (Array) The array of blocks
+     */
+    _this.parse_blocks = function(){
       
       var current_block = false,
           inside_single_line_block = false,
@@ -161,11 +193,16 @@ var DSS = (function(){
     
     };
 
-    // Normalizes the comment block to ignore any consistent preceding
-    // whitespace. Consistent means the same amount of whitespace on every line
-    // of the comment block. Also strips any whitespace at the start and end of
-    // the whole block.
-    this.normalize = function(text_block){
+    /*
+     * Normalizes the comment block to ignore any consistent preceding
+     * whitespace. Consistent means the same amount of whitespace on every line
+     * of the comment block. Also strips any whitespace at the start and end of
+     * the whole block.
+     *
+     * @param (String) Text block
+     * @return (String) A cleaned up text block
+     */
+    _this.normalize = function(text_block){
       if(this.options.preserve_whitespace)
         return text_block;
 
@@ -190,101 +227,143 @@ var DSS = (function(){
         }).join("\n");
       })(text_block.split("\n"));
     
-      return dss.trim(unindented);
-    
+      return _dss.trim(unindented);
+  
     };
 
-  };
+    // Return function
+    return _this;
 
-  ////////////////////////////////////////////////////////////////////////////
-  // Represents a style modifier. Usually a class name or a
-  // pseudo-class such as :hover. See the spec on The Modifiers Section for
-  // more information.
-  ////////////////////////////////////////////////////////////////////////////
-  dss.Modifier = function(name, description){
-       
+  })();
+
+  /*
+   * Represents a style modifier. Usually a class name or a
+   * pseudo-class such as :hover. See the spec on The Modifiers Section for
+   * more information.
+   *
+   * @param (String) name
+   * @param (String) description
+   */
+  _dss.Modifier = (function(){
+
+    var _this = function(name, description){
       // Returns the modifier name String.
       this._name = name;
       this._description = description;
+    };
 
-      // The modifier name as a CSS class. For pseudo-classes, a
-      // generated class name is returned. Useful for generating styleguides.
-      this.class_name = function(){
-        return dss.trim(this._name.replace('.', ' ').replace(':', ' pseudo-class-'));
-      };
-  };
+    /*
+     * The modifier name as a CSS class. For pseudo-classes, a
+     * generated class name is returned. Useful for generating styleguides.
+     *
+     * @return (String) The trimed class name
+     */
+    _this.class_name = function(){
+      return _dss.trim(this._name.replace('.', ' ').replace(':', ' pseudo-class-'));
+    };
+    
+    // Return function
+    return _this;
 
-  ////////////////////////////////////////////////////////////////////////////
-  // The main KSS parser. Takes a directory full of SASS / SCSS / CSS
-  // files and parses the KSS within them.
-  ////////////////////////////////////////////////////////////////////////////
-  dss.Parser = function(paths){
-    this.sections = {};
-    paths.map(function(){
-      var filename = "#{" + this + "}/**/*.*";
-      var parser = new dss.CommentParser(filename);
-      parser.blocks.map(function(){
-        if(this.dss_block(comment_block))
-          this.add_section(comment_block, filename);
+  })();
+
+  /* 
+   * The main KSS parser. Takes a directory full of SASS / SCSS / CSS
+   * files and parses the KSS within them.
+   *
+   * @param (Array) Array of paths
+   * @return (Array) Array of paths that contain styles
+   */
+  _dss.Parser = (function(){
+
+    var _this = function(paths){
+      this.sections = {};
+      paths.map(function(){
+        var filename = "#{" + this + "}/**/*.*";
+        var parser = new _dss.CommentParser(filename);
+        parser.blocks.map(function(){
+          if(this._dss_block(comment_block))
+            this.add_section(comment_block, filename);
+        });
       });
-    });
+    };
   
-    // Add section
-    this.add_ssection = function(comment_text, filename){
+    /*
+     * Add section
+     *
+     * @param (String) comment text
+     * @param (String) file name
+     */
+    _this.add_ssection = function(comment_text, filename){
       var base_name = filename; // TODO, basename file directive
-      section = new dss.Section(comment_text, base_name);
+      section = new _dss.Section(comment_text, base_name);
       this.sections[section.section] = section;
     };
 
-    // Public: Takes a cleaned (no comment syntax like // or /* */) comment
-    // block and determines whether it is a KSS documentation block.
-    this.dss_block = function(cleaned_comment){
+    /*
+     * Takes a cleaned (no comment syntax) comment
+     * block and determines whether it is a KSS documentation block.
+     *
+     * @param (String) Cleaned up comment
+     * @return (Boolean) Result of conformity check 
+     */
+    _this.dss_block = function(cleaned_comment){
       if(typeof cleaned_comment !== 'String')
         return false;
       var possible_reference = cleaned_comment.split("\n\n").pop();
-      return possible_reference.match(/Styleguide \d/).length > 0; // TODO, check validty
+      return possible_reference.match(/Styleguide \d/).length > 0;
     };
 
-    // Finds the Section for a given styleguide reference.
-    this.section = function(reference){
-      return this.sections[reference] || new dss.Section();
+    /*
+     * Finds the Section for a given styleguide reference.
+     *
+     * @param (String) name of section
+     * @return (Object) A reference or blank section
+     */
+    _this.section = function(reference){
+      return this.sections[reference] || new _dss.Section();
     };
 
-  };
+    // Return function
+    return _this;
 
-  ////////////////////////////////////////////////////////////////////////////
-  // Represents a styleguide section. Each section describes one UI
-  // element. A Section can be thought of as the collection of the description,
-  // modifiers, and styleguide reference.
-  ////////////////////////////////////////////////////////////////////////////
-  dss.Section = function(comment_text, filename){
+  })();
 
-    this._raw = (comment_text) ? comment_text : '';
-    this._filename = filename;
+  /*
+   * Represents a styleguide section. Each section describes one UI
+   * element. A Section can be thought of as the collection of the description,
+   * modifiers, and styleguide reference.
+   */
+  _dss.Section = (function(){
+
+    var _this = function(comment_text, filename){
+      this._raw = (comment_text) ? comment_text : '';
+      this._filename = filename;
+    };
 
     // Splits up the raw comment text into comment sections that represent
     // description, modifiers, etc.
-    this.comment_sections = function(){
+    _this.comment_sections = function(){
       return this._comment_sections = this._raw.split("\n\n");
     };
 
     // The styleguide section for which this comment block references.
-    this.section = function(){
+    _this.section = function(){
       if(this._section)
         return this._section;
-      var cleaned  = dss.trim(this.section_comment()).replace(/\.$/, '');
+      var cleaned  = _dss.trim(this.section_comment()).replace(/\.$/, '');
       return this._section = cleaned.match(/Styleguide (.+)/)[1];
     }
 
     // The description section of a styleguide comment block.
-    this.description = function(){
+    _this.description = function(){
       this._comment_sections.reject.map(function(){
         return this.section_comment() || this.modifiers_comment();
       })().join("\n\n");
     };
 
     // The modifiers section of a styleguide comment block.
-    this.modifiers = function(){
+    _this.modifiers = function(){
       var last_indent = 0,
           modifiers = [];
 
@@ -293,17 +372,17 @@ var DSS = (function(){
 
       this.modifiers_comment().split("\n").map(function(){
         var line = this,
-            next = (dss.trim(line) === ''),
+            next = (_dss.trim(line) === ''),
             indent = line.match(/^\s*/)[0].length;
 
         if(last_indent && (indent > last_indent)){
-          dss.last(modifiers).description += dss.squeeze(line);
+          _dss.last(modifiers).description += _dss.squeeze(line);
         } else {
           var split = line.split(" - "),
               modifier = split[0],
               desc = split[1];
           if(modifier && desc)
-            modifiers += new dss.Modifier(dss.trim(modifier), dss.trim(desc));
+            modifiers += new _dss.Modifier(_dss.trim(modifier), _dss.trim(desc));
         }
         last_indent = indent;
       });
@@ -333,9 +412,59 @@ var DSS = (function(){
       */
     };
 
-  };
+    // Return function
+    return _this;
+
+  })();
+
+  /*
+   * Build
+   *
+   * @param (String) path to file
+   * @param (Object) options
+   */
+  _dss.Build = (function(){
+
+    _this = function(path, output){
+      var styleguide = new _dss.Parser(path),
+          html = this.render(path, styleguide);
+      fs.writeFile('/example/index.html', html, function(err) {
+        if(err){
+          console.log(err);
+          console.log('>> Build Error!');
+        } else {
+          console.log('>> Build Complete!');
+        }
+      };
+    };
+
+    _this.render = function(path, options){
+      return mustache.compileAndRender(path, options);
+    };
+
+    // Return function
+    return _this;
+
+  })();
+
 
   // Return function
-  return dss;
+  return _dss;
 
 })();
+
+// Export for Require.js and other AMD
+if (typeof exports !== 'undefined') {
+  if (typeof module !== 'undefined' && module.exports) {
+    exports = module.exports = dss;
+  }
+  exports.dss = dss;
+} else {
+  root['dss'] = dss;
+}
+
+if (typeof define === 'function' && define.amd) {
+  define(function(require) {
+    return dss;
+  });
+} 

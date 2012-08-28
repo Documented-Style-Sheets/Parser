@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+  <title>Styleguide Example</title>
+  
+  <link rel="stylesheet" href="assets/css/styles.css" type="text/css" />
+  {{stylesheets}}
+
+</head>
+<body>
+  
+  <header>
+    <h1>Styleguide Example</h1>
+  </header>
+
+  <div id="wrapper">
+
+    <nav role="main">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/styleguide">Styleguide</a></li>
+      </ul>
+    </nav>
+
+    <div class="styleguide">
+
+      {{#section}}
+      <div class="section">
+        
+        <h3>{{section}} <em>{{filename}}</em></h3>
+
+        <div class="styleguide-description">
+          
+          <p>{{description}}</p>
+          
+          <ul class="styleguide-modifier">
+            {{#modifiers}}
+              <li><strong>{{name}}</strong> - {{description}}</li>
+            {{/modifiers}}
+          </ul>
+          
+        </div>
+        
+        <div class="styleguide-element">
+          {{example_html}}
+        </div>
+
+        {{#modifiers}}
+        <div class="styleguide-element styleguide-modifier">
+          <span class="styleguide-modifier-name">{{name}}</span>
+          <!-- example_html.sub('$modifier_class', " #{modifier.class_name}") -->
+        </div>
+        {{/modifiers}}
+        
+        <pre class="styleguide-code">{{escaped_html}}</pre>
+
+      </div>
+      {{/section}}
+
+    </div>
+
+  </div>
+
+  <script src="assets/js/scripts.js"></script>
+
+</body>
+</html>
