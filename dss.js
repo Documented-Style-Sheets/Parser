@@ -65,7 +65,7 @@ var dss = (function(){
 
     var _this = function(file_path, options){
       this.options = (options) ? options : {};
-      this.options.preserve_whitespace = (options.preserve_whitespace) ? options.preserve_whitespace : false;
+      this.options.preserve_whitespace = (this.options.preserve_whitespace) ? this.options.preserve_whitespace : false;
       this._file_path = file_path;
       this._blocks = [];
       this._parsed = false;
@@ -278,9 +278,12 @@ var dss = (function(){
 
     var _this = function(paths){
       this.sections = {};
+      console.log(paths);
       paths.map(function(){
         var filename = "#{" + this + "}/**/*.*";
         var parser = new _dss.CommentParser(filename);
+        console.log('>>>>');
+        console.log(parser);
         parser.blocks.map(function(){
           if(this._dss_block(comment_block))
             this.add_section(comment_block, filename);
@@ -435,7 +438,7 @@ var dss = (function(){
         } else {
           console.log('>> Build Complete!');
         }
-      };
+      });
     };
 
     _this.render = function(path, options){
