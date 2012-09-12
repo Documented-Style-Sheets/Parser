@@ -4,7 +4,7 @@
 var path = require('path');
 
 // Borrowed from grunt.js
-var dir = path.resolve((function(dirpath, filename){]
+var dir = path.resolve((function(dirpath, filename){
 	var filepath = path.join(dirpath, filename);
 	if (path.existsSync(filepath)) { return filepath; }
 	var parentpath = path.resolve(dirpath, '..');
@@ -14,4 +14,4 @@ var dir = path.resolve((function(dirpath, filename){]
 if (!path.existsSync(dir)) { dir = '../dss'; }
 
 // Run DSS
-require(dir).cli();
+require(dir).Build(__dirname);

@@ -14,9 +14,10 @@
  */
 
 // Include dependancies
-var mustache = require('mu2');
+var mustache = require('mustache');
 var lazy = require('lazy');
 var fs = require('fs');
+var path = require('path');
 
 // DSS Object
 var dss = (function(){
@@ -45,6 +46,16 @@ var dss = (function(){
   };
 
   /*
+   * Check if object is an array
+   *
+   * @param (Object) The object to check
+   * @return (Boolean) The result of the test
+   */ 
+  _dss.isArray = function(obj){
+    return toString.call(obj) == '[object Array]';
+  };
+
+  /*
    * Squeeze unnecessary extra characters/string
    *
    * @param (String) The string to be squeeze
@@ -53,6 +64,37 @@ var dss = (function(){
    */
   _dss.squeeze = function(str, def){
     return str.replace(/\s{2,}/g, def); 
+  };
+
+  /*
+   * Walks the directory structure looking for CSS files
+   *
+   * @param (String) The directory to crawl
+   * @param (Function) The callback function to be executed when done
+   */
+  _dss.walker = function(dir, done) {
+    var results = [];
+    fs.readdir(dir, function(err, list) {
+      if (err) return done(err);
+      var pending = list.length;
+      if (!pending) return done(null, results);
+      list.forEach(function(file) {
+        file = dir + '/' + file;
+        fs.stat(file, function(err, stat) {
+          if (stat && stat.isDirectory()) {
+            _dss.walker(file, function(err, res) {
+              results = results.concat(res);
+              if (!--pending) done(null, results);
+            });
+          } else {
+            var ext = file.substr((file.lastIndexOf('.')+1), file.length);
+            if(ext === 'css' || ext === 'sass' || ext === 'less' || ext === 'scss')
+              results.push(file);
+            if (!--pending) done(null, results);
+          }
+        });
+      });
+    });
   };
 
   /*
@@ -275,16 +317,12 @@ var dss = (function(){
    * @return (Array) Array of paths that contain styles
    */
   _dss.Parser = (function(){
-
-    var _this = function(paths){
+    var _this = function(paths, root){
       this.sections = {};
-      console.log(paths);
-      paths.map(function(){
-        var filename = "#{" + this + "}/**/*.*";
+      paths.map(function(filename){
+        console.log('• ' + path.relative(root, filename));
         var parser = new _dss.CommentParser(filename);
-        console.log('>>>>');
-        console.log(parser);
-        parser.blocks.map(function(){
+        parser._blocks.forEach(function(){
           if(this._dss_block(comment_block))
             this.add_section(comment_block, filename);
         });
@@ -429,20 +467,30 @@ var dss = (function(){
   _dss.Build = (function(){
 
     _this = function(path, output){
-      var styleguide = new _dss.Parser(path),
-          html = this.render(path, styleguide);
-      fs.writeFile('/example/index.html', html, function(err) {
-        if(err){
-          console.log(err);
-          console.log('>> Build Error!');
-        } else {
-          console.log('>> Build Complete!');
-        }
+      _dss.walker(path, function(err, files){
+        var styleguide = new _dss.Parser(files, path);
+        _this.render('../template/index.mustache', styleguide, output);
       });
     };
 
-    _this.render = function(path, options){
-      return mustache.compileAndRender(path, options);
+    _this.render = function(path, data, output){
+      output = (output) ? output : 'styleguide.html';
+      fs.readFile(path, function(err, template){
+        if(err){ 
+          console.error('× Build error: %s', err);
+          process.exit(1);
+        }
+        template = template + '';
+        var html = mustache.render(template, data);
+        fs.writeFile(output, html, function(err) {
+          if(err){
+            console.error('× Build error: %s', err);
+            process.exit(1);
+          } else {
+            console.log('✓ Build process complete.');
+          }
+        });
+      });
     };
 
     // Return function

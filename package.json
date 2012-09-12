@@ -27,6 +27,6 @@
   "dependencies": {
     "commander": "~1.0.0",
     "lazy": "~1.0.8",
-    "mu2": "0.5.16"
+    "mustache": "0.7.0"
   }
 }
