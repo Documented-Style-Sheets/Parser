@@ -15,7 +15,6 @@
 
 // Include dependancies
 var mustache = require('mustache');
-var lazy = require('lazy');
 var fs = require('fs');
 var path = require('path');
 
@@ -108,9 +107,10 @@ var dss = (function(){
     var _this = function(file_path, options){
       this.options = (options) ? options : {};
       this.options.preserve_whitespace = (this.options.preserve_whitespace) ? this.options.preserve_whitespace : false;
+      this.sections = [];
       this._file_path = file_path;
       this._blocks = [];
-      this._parsed = false;
+      this._parsed = false;    
     };
 
     /*
@@ -119,8 +119,8 @@ var dss = (function(){
      * @param (String) line to parse/check
      * @return (Boolean) result of check
      */
-    _this.single_line_comment = function(line){
-      return !!(line =~ /^\s*\/\//);
+    _this.prototype.single_line_comment = function(line){
+      return !!line.match(/^\s*\/\//);
     };
 
     /*
@@ -129,8 +129,8 @@ var dss = (function(){
      * @param (String) line to parse/check
      * @return (Boolean) result of check
      */
-    _this.start_multi_line_comment = function(line){
-      return !!(line =~ /^\s*\/\*/);
+    _this.prototype.start_multi_line_comment = function(line){
+      return !!line.match(/^\s*\/\*/);
     };
 
     /*
@@ -139,10 +139,10 @@ var dss = (function(){
      * @parse (String) line to parse/check
      * @return (Boolean) result of check
      */
-    _this.end_multi_line_comment = function(line){
+    _this.prototype.end_multi_line_comment = function(line){
       if(this.single_line_comment(line))
         return false;
-      return !!(line =~ /.*\*\//);
+      return !!line.match(/.*\*\//);
     };
 
     /*
@@ -151,7 +151,7 @@ var dss = (function(){
      * @param (String) line to parse/check
      * @return (Boolean) result of check
      */
-    _this.parse_single_line = function(line){
+    _this.prototype.parse_single_line = function(line){
       return line.replace(/\s*\/\//, '');
     };
 
@@ -161,7 +161,7 @@ var dss = (function(){
      * @param (String) line to parse/check
      * @return (Boolean) result of check
      */
-    _this.parse_multi_line = function(line){
+    _this.prototype.parse_multi_line = function(line){
       cleaned = line.replace(/\s*\/\*/, '');
       return cleaned.replace(/\*\//, '');
     };
@@ -173,8 +173,8 @@ var dss = (function(){
      *
      * @return (Array) The array of parsed lines/blocks
      */
-    _this.blocks = function(){
-      return this._parsed ? this._blocks : this.parse_blocks;
+    _this.prototype.blocks = function(){
+      return this._parsed ? this._blocks : this.parse_blocks();
     };
 
     /* 
@@ -182,57 +182,76 @@ var dss = (function(){
      *
      * @return (Array) The array of blocks
      */
-    _this.parse_blocks = function(){
+    _this.prototype.parse_blocks = function(){
       
-      var current_block = false,
+      var current_block = '',
           inside_single_line_block = false,
           inside_multi_line_block = false,
-          parsed = '';
-      
-      new lazy(fs.createReadStream(this._file_path))
-        .lines
-        .forEach(function(line){
+          parsed = '',
+          sections = {};
+          _that = this;
+
+      fs.readFile(this._file_path, function(err, lines){
+
+        if(err){
+          console.error("× Build error: %s", err);
+          process.exit(1);
+        }
+
+        lines = lines + '';
+        lines.split(/\n/).forEach(function(line){
           
-        line = line.toString();
+          line = line + '';
+
+          // Parse Single line comment
+          if(_that.single_line_comment(line)){
+            parsed = _that.parse_single_line(line);
+            if(inside_multi_line_block){
+              current_block += "\n#{" + parsed + "}";
+            } else {
+              current_block = parsed;
+              inside_single_line_block = true;
+            }
+          } 
+
+          // Parse multi-line comments
+          if(_that.start_multi_line_comment(line) || inside_multi_line_block){
+            parsed = _that.parse_multi_line(line);
+            if(inside_multi_line_block){
+              current_block += "\n{#" + parsed + "}";
+            } else {
+              current_block = parsed;
+              inside_multi_line_block = true;
+            }
+          }
+
+          // End a multi-line block
+          inside_multi_line_block = (_that.end_multi_line_comment(line)) ? false : inside_multi_line_block;
+
+          // Store current block if done
+          if(!_that.single_line_comment(line) || !inside_multi_line_block){
+            if(current_block){
+              _that.normalize(current_block);
+              _that._blocks.push(_that.normalize(current_block));
+            }
+            // console.log(_that._blocks);
+            inside_single_line_block = false;
+            current_block = '';
+          }
+
+        });
         
-        // Parse Single line comment
-        if(this.single_line_comment(line)){
-          parsed = this.parse_single_line(line);
-          if(inside_multi_line_block){
-            current_block += "\n#{" + parsed + "}";
-          } else {
-            current_block = parsed;
-            inside_single_line_block = true;
+        _that._parsed = true;
+        _that._blocks.forEach(function(block){
+          if(_that.dss_block(block)){
+            _that.add_section(block, _that._file_path);
+            console.log(_that.sections);
           }
-        } 
+        });
 
-        // Parse multi-line comments
-        if(this.start_multi_line_coment(line) || this.inside_multi_line_block(line)){
-          parsed = this.parse_multi_line(line);
-          if(inside_multi_line_block){
-            current_block += "\n{#" + parsed + "}";
-          } else {
-            current_block = parsed;
-            inside_multi_line_block = true;
-          }
-        }
-
-        // End a multi-line block
-        inside_multi_line_block = (this.end_multi_line_comment(line)) ? false : inside_multi_line_block;
-
-        // Store current block if done
-        if(!this.single_line_comment(line) || !inside_multi_block){
-          if(current_block)
-            this._blocks.push(this.normalize(current_block));
-          inside_sindle_line_block = false;
-          current_block = false;
-        }
+        console.log(_that.sections);
 
       });
-
-      this._parsed = true;
-      return this._blocks;
-    
     };
 
     /*
@@ -244,18 +263,18 @@ var dss = (function(){
      * @param (String) Text block
      * @return (String) A cleaned up text block
      */
-    _this.normalize = function(text_block){
+    _this.prototype.normalize = function(text_block){
       if(this.options.preserve_whitespace)
         return text_block;
 
       // Strip out any preceding [whitespace]* that occur on every line. Not
       // the smartest, but I wonder if I care.
-      text_block = text_block.replace(/^(\s*\*+)/, '')
+      text_block = text_block.replace(/^(\s*\*+)/, '');
 
       // Strip consistent indenting by measuring first line's whitespace
       var indent_size = false;
       var unindented = (function(lines){
-        return lines.map(function(){
+        return lines.map(function(line){
           var preceding_whitespace = line.match(/^\s*/)[0].length;
           if(!indent_size)
             indent_size = preceding_whitespace;
@@ -268,9 +287,46 @@ var dss = (function(){
           }
         }).join("\n");
       })(text_block.split("\n"));
-    
-      return _dss.trim(unindented);
+
+      return _dss.trim(text_block);
   
+    };
+
+    /*
+     * Takes a cleaned (no comment syntax) comment
+     * block and determines whether it is a KSS/DSS documentation block.
+     *
+     * @param (String) Cleaned up comment
+     * @return (Boolean) Result of conformity check 
+     */
+    _this.prototype.dss_block = function(cleaned_comment){
+      if(typeof cleaned_comment !== 'string'){
+        return false;
+      }
+      var possible_reference = cleaned_comment.split("\n\n").pop();
+      return possible_reference.match(/Styleguide \d/);
+    };
+
+    /*
+     * Add section
+     *
+     * @param (String) comment text
+     * @param (String) file name
+     */
+    _this.prototype.add_section = function(comment_text, filename){
+      var base_name = filename; // TODO, basename file directive
+      section = new _dss.Section(comment_text, base_name);
+      this.sections[section.section] = section;
+    };
+
+    /*
+     * Finds the Section for a given styleguide reference.
+     *
+     * @param (String) name of section
+     * @return (Object) A reference or blank section
+     */
+    _this.prototype.section = function(reference){
+      return this.sections[reference] || new _dss.Section();
     };
 
     // Return function
@@ -318,54 +374,13 @@ var dss = (function(){
    */
   _dss.Parser = (function(){
     var _this = function(paths, root){
-      this.sections = {};
       paths.map(function(filename){
         console.log('• ' + path.relative(root, filename));
         var parser = new _dss.CommentParser(filename);
-        parser._blocks.forEach(function(){
-          if(this._dss_block(comment_block))
-            this.add_section(comment_block, filename);
-        });
+        parser.parse_blocks();
       });
     };
-  
-    /*
-     * Add section
-     *
-     * @param (String) comment text
-     * @param (String) file name
-     */
-    _this.add_ssection = function(comment_text, filename){
-      var base_name = filename; // TODO, basename file directive
-      section = new _dss.Section(comment_text, base_name);
-      this.sections[section.section] = section;
-    };
 
-    /*
-     * Takes a cleaned (no comment syntax) comment
-     * block and determines whether it is a KSS documentation block.
-     *
-     * @param (String) Cleaned up comment
-     * @return (Boolean) Result of conformity check 
-     */
-    _this.dss_block = function(cleaned_comment){
-      if(typeof cleaned_comment !== 'String')
-        return false;
-      var possible_reference = cleaned_comment.split("\n\n").pop();
-      return possible_reference.match(/Styleguide \d/).length > 0;
-    };
-
-    /*
-     * Finds the Section for a given styleguide reference.
-     *
-     * @param (String) name of section
-     * @return (Object) A reference or blank section
-     */
-    _this.section = function(reference){
-      return this.sections[reference] || new _dss.Section();
-    };
-
-    // Return function
     return _this;
 
   })();
@@ -433,7 +448,6 @@ var dss = (function(){
 
     // TODO: file traversal
     var section_comment = function(){
-      console.log(this._comment_sections);
       return this._comment_sections;
       /*
       comment_sections.find do |text|
@@ -444,7 +458,6 @@ var dss = (function(){
     
     // TODO: reject logic
     var modifiers_comment = function(){
-      console.log(this._comment_sections);
       return this._comment_sections;
       /*
       comment_sections[1..-1].reject do |section|
@@ -469,6 +482,7 @@ var dss = (function(){
     _this = function(path, output){
       _dss.walker(path, function(err, files){
         var styleguide = new _dss.Parser(files, path);
+        console.log('✓ Styleguide Object: ', styleguide);
         _this.render('../template/index.mustache', styleguide, output);
       });
     };

@@ -26,7 +26,6 @@
   "keywords": ["css","kss","dss","styles","docs","documentation","cli"],
   "dependencies": {
     "commander": "~1.0.0",
-    "lazy": "~1.0.8",
     "mustache": "0.7.0"
   }
 }
