@@ -71,28 +71,82 @@ var dss = (function(){
    * @param (String) The directory to crawl
    * @param (Function) The callback function to be executed when done
    */
-  _dss.walker = function(dir, done) {
+  _dss.walker = function(dir, callback) {
     var results = [];
     fs.readdir(dir, function(err, list) {
-      if (err) return done(err);
+      if (err) return callback(err);
       var pending = list.length;
-      if (!pending) return done(null, results);
+      if (!pending) return callback(null, results);
       list.forEach(function(file) {
         file = dir + '/' + file;
         fs.stat(file, function(err, stat) {
           if (stat && stat.isDirectory()) {
             _dss.walker(file, function(err, res) {
               results = results.concat(res);
-              if (!--pending) done(null, results);
+              if (!--pending) callback(null, results);
             });
           } else {
             var ext = file.substr((file.lastIndexOf('.')+1), file.length);
             if(ext === 'css' || ext === 'sass' || ext === 'less' || ext === 'scss')
               results.push(file);
-            if (!--pending) done(null, results);
+            if (!--pending) callback(null, results);
           }
         });
       });
+    });
+  };
+
+  /*
+   * Recursively create directories
+   *
+   * @param (String) path of the directory to create
+   * @param (Number) chmod mode to set the directories at
+   * @param (Function) The callback function to be executed when complete
+   * @param (Number) Current position in the split path array
+   */
+  _dss.mkdir = function(path, mode, callback, position) {
+    mode = mode || 0777;
+    position = position || 0;
+    parts = require('path').normalize(path).split('/');
+    if(position >= parts.length){
+        if (callback) {
+            return callback();
+        } else {
+            return true;
+        }
+    }
+    var directory = parts.slice(0, position + 1).join('/');
+    fs.stat(directory, function(err) {
+        if (err === null) {
+            _dss.mkdir(path, mode, callback, position + 1);
+        } else {
+            fs.mkdir(directory, mode, function (err) {
+                if (err) {
+                    if (callback) {
+                        return callback(err);
+                    } else {
+                        throw err;
+                    }
+                } else {
+                    _dss.mkdir(path, mode, callback, position + 1);
+                }
+            })
+        }
+    });
+  };
+
+  /*
+   * Create a file 
+   * 
+   * @param (String) The path to the file to create
+   * @param (String) The contents to write to the file
+   * @param (Function) The callback function when done creation
+   */
+  _dss.writeFile = function(path, contents, callback){
+    var directories = path.split('/');
+    directories.pop();
+    _dss.mkdir(directories.join('/'), 0777, function(){
+      fs.writeFile(path, contents, callback);
     });
   };
 
@@ -194,7 +248,7 @@ var dss = (function(){
       fs.readFile(this._file_path, function(err, lines){
 
         if(err){
-          console.error("× Build error: %s", err);
+          console.error("× Build error: [parse_blocks] %s", err);
           process.exit(1);
         }
 
@@ -245,10 +299,8 @@ var dss = (function(){
         _that._blocks.forEach(function(block){
           if(_that.dss_block(block)){
             _that.add_section(block, _that._file_path);
-            console.log(_that.sections);
           }
         });
-
         console.log(_that.sections);
 
       });
@@ -314,9 +366,8 @@ var dss = (function(){
      * @param (String) file name
      */
     _this.prototype.add_section = function(comment_text, filename){
-      var base_name = filename; // TODO, basename file directive
-      section = new _dss.Section(comment_text, base_name);
-      this.sections[section.section] = section;
+      var section = new _dss.Section(comment_text, filename);
+      this.sections[section.section()] = section;
     };
 
     /*
@@ -399,27 +450,27 @@ var dss = (function(){
 
     // Splits up the raw comment text into comment sections that represent
     // description, modifiers, etc.
-    _this.comment_sections = function(){
+    _this.prototype.comment_sections = function(){
       return this._comment_sections = this._raw.split("\n\n");
     };
 
     // The styleguide section for which this comment block references.
-    _this.section = function(){
+    _this.prototype.section = function(){
       if(this._section)
         return this._section;
-      var cleaned  = _dss.trim(this.section_comment()).replace(/\.$/, '');
+      var cleaned = _dss.trim(this.section_comment()).replace(/\.$/, '');
       return this._section = cleaned.match(/Styleguide (.+)/)[1];
-    }
+    };
 
     // The description section of a styleguide comment block.
-    _this.description = function(){
+    _this.prototype.description = function(){
       this._comment_sections.reject.map(function(){
         return this.section_comment() || this.modifiers_comment();
       })().join("\n\n");
     };
 
     // The modifiers section of a styleguide comment block.
-    _this.modifiers = function(){
+    _this.prototype.modifiers = function(){
       var last_indent = 0,
           modifiers = [];
 
@@ -446,18 +497,20 @@ var dss = (function(){
       return modifiers;
     };
 
-    // TODO: file traversal
-    var section_comment = function(){
-      return this._comment_sections;
-      /*
-      comment_sections.find do |text|
-        text =~ /Styleguide \d/i
-      end.to_s
-      */
+    // Section Comment
+    _this.prototype.section_comment = function(){
+      return (function(sections){
+          var text = '';
+          for(var i=0;i<sections.length;i++){
+            var res = sections[i].match(/Styleguide \d/i);
+            text += (res) ? res : ''; 
+          }
+        return text;
+      })(this.comment_sections());
     };
     
     // TODO: reject logic
-    var modifiers_comment = function(){
+    _this.prototype.modifiers_comment = function(){
       return this._comment_sections;
       /*
       comment_sections[1..-1].reject do |section|
@@ -479,26 +532,30 @@ var dss = (function(){
    */
   _dss.Build = (function(){
 
-    _this = function(path, output){
+    _this = function(path, template_dir, output_dir){
       _dss.walker(path, function(err, files){
         var styleguide = new _dss.Parser(files, path);
         console.log('✓ Styleguide Object: ', styleguide);
-        _this.render('../template/index.mustache', styleguide, output);
+        template_dir = template_dir || '../template';
+        output_dir = output_dir || 'styleguide';
+        _this.render(template_dir, output_dir, styleguide);
       });
     };
 
-    _this.render = function(path, data, output){
-      output = (output) ? output : 'styleguide.html';
-      fs.readFile(path, function(err, template){
+    _this.render = function(template, output, styleguide){
+      _dss.walker
+
+      template = template + '/default.mustache';
+      output = output + '/index.html';
+      fs.readFile(template, function(err, html){
         if(err){ 
-          console.error('× Build error: %s', err);
+          console.error('× Build error: [readFile] %s', err);
           process.exit(1);
         }
-        template = template + '';
-        var html = mustache.render(template, data);
-        fs.writeFile(output, html, function(err) {
+        html = mustache.render((html + ''), styleguide);
+        _dss.writeFile(output, html, function(err) {
           if(err){
-            console.error('× Build error: %s', err);
+            console.error('× Build error: [writeFile] %s', err);
             process.exit(1);
           } else {
             console.log('✓ Build process complete.');
