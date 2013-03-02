@@ -1,31 +1,38 @@
 {
-  "name": "DSS",
-  "description": "A command line build tool utilizing KSS for Documenting Style Sheets.",
-  "version": "0.0.1",
-  "author": "Darcy Clarke (http://darcyclarke.me/)",
-  "homepage": "http://github.com/darcyclarke/dss",
+  "name": "dss",
+  "description": "Documented Style Sheets",
+  "version": "1.0.0",
+  "homepage": "https://github.com/darcyclarke/DSS",
+  "author": {
+    "name": "darcyclarke",
+    "email": "darcy@darcyclarke.me",
+    "url": "https://darcyclarke.me"
+  },
   "repository": {
     "type": "git",
-    "url": "git://github.com/darcyclarke/dss.git"
+    "url": "https://github.com/darcyclarke/DSS"
   },
   "bugs": {
-    "url" : "http://github.com/darcyclarke/dss/issues"
+    "url": "https://github.com/darcyclarke/DSS/issues"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "http://github.com/cowboy/grunt/blob/master/LICENSE-MIT"
+      "url": "https://github.com/darcyclarke/DSS/blob/master/LICENSE-MIT"
     }
   ],
-  "main": "dss",
-  "bin": "bin/dss",
+  "main": "Gruntfile.js",
   "engines": {
-    "node": ">= 0.6.0"
+    "node": ">= 0.8.0"
   },
-  "preferGlobal": true,
-  "keywords": ["css","kss","dss","styles","docs","documentation","cli"],
-  "dependencies": {
-    "commander": "~1.0.0",
+  "devDependencies": {
+    "grunt": "~0.4.0",
     "mustache": "0.7.0"
-  }
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.0"
+  },
+  "keywords": [
+    "gruntplugin","css","dss","styles","docs","documentation","cli"
+  ]
 }

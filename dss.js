@@ -24,14 +24,47 @@ var dss = (function(){
   // Store reference
   var _dss = function(){};
 
+  _dss.queue = {};
+  _dss.variables = {};
+
+  _dss.publish = function(topic, args){
+      _dss.queue[topic] && _dss.queue[topic].forEach(function(callback){
+          callback.apply(_dss, args || []);
+      });
+  };
+  
+  _dss.subscribe = function(topic, callback){
+      if(!_dss.queue[topic])
+          _dss.queue[topic] = [];
+      _dss.queue[topic].push(callback);
+      return [topic, callback];
+  };
+  
+  _dss.unsubscribe = function(handle){
+      var t = handle[0];
+      _dss.queue[t] && _dss.queue[t].forEach(function(idx){
+          if(this == handle[1])
+              _dss.queue[t].splice(idx, 1);
+      });
+  };
+
+  _dss.describe = function(name, callback){
+    _dss.variables[name] = callback;
+  };
+
   /*
    * Trim whitespace from string
    *
    * @param (String) The string to be trimmed
    * @return (String) The trimmed string
    */
-  _dss.trim = function(str){
-    return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+  _dss.trim = function(str, arr){
+    var defaults = [ /^\s\s*/, /\s\s*$/ ];
+    arr = (_dss.isArray(arr)) ? arr.concat(defaults) : defaults;
+    arr.forEach(function(regEx){
+      str = str.replace(regEx, '');
+    });
+    return str;
   };
 
   /*
@@ -41,7 +74,7 @@ var dss = (function(){
    * @return (Object) The last item in the array
    */
   _dss.last = function(arr){
-    return arr[arr.length - 1];
+    return arr[arr.length - 1] || [];
   };
 
   /*
@@ -156,13 +189,13 @@ var dss = (function(){
    * @param (String) path to file
    * @param (Object) options
    */
-  _dss.CommentParser = (function(){
+  _dss.parser = (function(){
 
-    var _this = function(file_path, options){
+    var _this = function(file_path, relative, options){
       this.options = (options) ? options : {};
-      this.options.preserve_whitespace = (this.options.preserve_whitespace) ? this.options.preserve_whitespace : false;
-      this.sections = [];
-      this._file_path = file_path;
+      this.options.preserve_whitespace = !!(this.options.preserve_whitespace);
+      this._file = file_path;
+      this._relative = relative;
       this._blocks = [];
       this._parsed = false;    
     };
@@ -216,7 +249,7 @@ var dss = (function(){
      * @return (Boolean) result of check
      */
     _this.prototype.parse_multi_line = function(line){
-      cleaned = line.replace(/\s*\/\*/, '');
+      var cleaned = line.replace(/\s*\/\*/, '');
       return cleaned.replace(/\*\//, '');
     };
 
@@ -227,8 +260,8 @@ var dss = (function(){
      *
      * @return (Array) The array of parsed lines/blocks
      */
-    _this.prototype.blocks = function(){
-      return this._parsed ? this._blocks : this.parse_blocks();
+    _this.prototype.blocks = function(callback){
+      return this._parsed ? this._blocks : this.parse_blocks(callback);
     };
 
     /* 
@@ -236,16 +269,20 @@ var dss = (function(){
      *
      * @return (Array) The array of blocks
      */
-    _this.prototype.parse_blocks = function(){
+    _this.prototype.parse_blocks = function(callback){
       
       var current_block = '',
           inside_single_line_block = false,
           inside_multi_line_block = false,
           parsed = '',
-          sections = {};
-          _that = this;
+          _that = this,
+          start = "{start}",
+          end = "{/end}",
+          blocks = [];
 
-      fs.readFile(this._file_path, function(err, lines){
+      fs.readFile(this._file, function(err, lines){
+
+        var lineNum = 0;
 
         if(err){
           console.error("× Build error: [parse_blocks] %s", err);
@@ -253,15 +290,17 @@ var dss = (function(){
         }
 
         lines = lines + '';
+
         lines.split(/\n/).forEach(function(line){
           
+          lineNum = lineNum + 1;
           line = line + '';
 
           // Parse Single line comment
           if(_that.single_line_comment(line)){
             parsed = _that.parse_single_line(line);
-            if(inside_multi_line_block){
-              current_block += "\n#{" + parsed + "}";
+            if(inside_single_line_block){
+              current_block += start + parsed + end;
             } else {
               current_block = parsed;
               inside_single_line_block = true;
@@ -269,18 +308,24 @@ var dss = (function(){
           } 
 
           // Parse multi-line comments
+          if(_that.start_multi_line_comment(line)){
+            current_block += start;
+          }
           if(_that.start_multi_line_comment(line) || inside_multi_line_block){
             parsed = _that.parse_multi_line(line);
             if(inside_multi_line_block){
-              current_block += "\n{#" + parsed + "}";
+              current_block += parsed;
             } else {
-              current_block = parsed;
+              current_block += parsed;
               inside_multi_line_block = true;
             }
           }
 
           // End a multi-line block
-          inside_multi_line_block = (_that.end_multi_line_comment(line)) ? false : inside_multi_line_block;
+          if(_that.end_multi_line_comment(line)){
+            inside_multi_line_block = false;
+            current_block += end;
+          }
 
           // Store current block if done
           if(!_that.single_line_comment(line) || !inside_multi_line_block){
@@ -288,7 +333,6 @@ var dss = (function(){
               _that.normalize(current_block);
               _that._blocks.push(_that.normalize(current_block));
             }
-            // console.log(_that._blocks);
             inside_single_line_block = false;
             current_block = '';
           }
@@ -296,12 +340,24 @@ var dss = (function(){
         });
         
         _that._parsed = true;
+        var x = 0, length = _that._blocks.length;
         _that._blocks.forEach(function(block){
           if(_that.dss_block(block)){
-            _that.add_section(block, _that._file_path);
+            var parts = block.replace(/.*@/, ''),
+                i = parts.indexOf(' '),
+                name = _dss.trim(parts.substr(0, i)),
+                description = _dss.trim(parts.substr(i)),
+                variable = _dss.variables[name];
+            block = {};
+            block[name] = (variable) ? variable.apply(_that, [ lineNum, description, lines ] ) : '';
+            blocks.push( block );
+          }
+          x++;
+          if(x >= length){
+            delete _that.options;
+            callback({ file: _that._relative, blocks: blocks });
           }
         });
-        console.log(_that.sections);
 
       });
     };
@@ -341,43 +397,20 @@ var dss = (function(){
       })(text_block.split("\n"));
 
       return _dss.trim(text_block);
-  
+
     };
 
     /*
-     * Takes a cleaned (no comment syntax) comment
-     * block and determines whether it is a KSS/DSS documentation block.
+     * Takes a block and checks if it is a DSS block
      *
      * @param (String) Cleaned up comment
      * @return (Boolean) Result of conformity check 
      */
     _this.prototype.dss_block = function(cleaned_comment){
-      if(typeof cleaned_comment !== 'string'){
+      if(typeof cleaned_comment !== 'string')
         return false;
-      }
       var possible_reference = cleaned_comment.split("\n\n").pop();
-      return possible_reference.match(/Styleguide \d/);
-    };
-
-    /*
-     * Add section
-     *
-     * @param (String) comment text
-     * @param (String) file name
-     */
-    _this.prototype.add_section = function(comment_text, filename){
-      var section = new _dss.Section(comment_text, filename);
-      this.sections[section.section()] = section;
-    };
-
-    /*
-     * Finds the Section for a given styleguide reference.
-     *
-     * @param (String) name of section
-     * @return (Object) A reference or blank section
-     */
-    _this.prototype.section = function(reference){
-      return this.sections[reference] || new _dss.Section();
+      return possible_reference.match(/.*@/);
     };
 
     // Return function
@@ -386,137 +419,38 @@ var dss = (function(){
   })();
 
   /*
-   * Represents a style modifier. Usually a class name or a
-   * pseudo-class such as :hover. See the spec on The Modifiers Section for
-   * more information.
-   *
-   * @param (String) name
-   * @param (String) description
+   * Comment Block
    */
-  _dss.Modifier = (function(){
-
-    var _this = function(name, description){
-      // Returns the modifier name String.
-      this._name = name;
-      this._description = description;
-    };
-
-    /*
-     * The modifier name as a CSS class. For pseudo-classes, a
-     * generated class name is returned. Useful for generating styleguides.
-     *
-     * @return (String) The trimed class name
-     */
-    _this.class_name = function(){
-      return _dss.trim(this._name.replace('.', ' ').replace(':', ' pseudo-class-'));
-    };
-    
-    // Return function
-    return _this;
-
-  })();
-
-  /* 
-   * The main KSS parser. Takes a directory full of SASS / SCSS / CSS
-   * files and parses the KSS within them.
-   *
-   * @param (Array) Array of paths
-   * @return (Array) Array of paths that contain styles
-   */
-  _dss.Parser = (function(){
-    var _this = function(paths, root){
-      paths.map(function(filename){
-        console.log('• ' + path.relative(root, filename));
-        var parser = new _dss.CommentParser(filename);
-        parser.parse_blocks();
-      });
-    };
-
-    return _this;
-
-  })();
-
-  /*
-   * Represents a styleguide section. Each section describes one UI
-   * element. A Section can be thought of as the collection of the description,
-   * modifiers, and styleguide reference.
-   */
-  _dss.Section = (function(){
+  _dss.block = (function(){
 
     var _this = function(comment_text, filename){
       this._raw = (comment_text) ? comment_text : '';
       this._filename = filename;
     };
 
-    // Splits up the raw comment text into comment sections that represent
-    // description, modifiers, etc.
-    _this.prototype.comment_sections = function(){
-      return this._comment_sections = this._raw.split("\n\n");
-    };
-
-    // The styleguide section for which this comment block references.
-    _this.prototype.section = function(){
-      if(this._section)
-        return this._section;
-      var cleaned = _dss.trim(this.section_comment()).replace(/\.$/, '');
-      return this._section = cleaned.match(/Styleguide (.+)/)[1];
-    };
-
-    // The description section of a styleguide comment block.
-    _this.prototype.description = function(){
-      this._comment_sections.reject.map(function(){
-        return this.section_comment() || this.modifiers_comment();
-      })().join("\n\n");
-    };
-
-    // The modifiers section of a styleguide comment block.
-    _this.prototype.modifiers = function(){
+    // The states section of a styleguide comment block.
+    _this.prototype.states = function(){
       var last_indent = 0,
-          modifiers = [];
+          states = [];
 
-      if(this.modifers_comment())
-        return modifiers;
-
-      this.modifiers_comment().split("\n").map(function(){
+      this.states.split("\n").map(function(){
         var line = this,
             next = (_dss.trim(line) === ''),
             indent = line.match(/^\s*/)[0].length;
 
         if(last_indent && (indent > last_indent)){
-          _dss.last(modifiers).description += _dss.squeeze(line);
+          _dss.last(states).description += _dss.squeeze(line);
         } else {
           var split = line.split(" - "),
-              modifier = split[0],
+              state = split[0],
               desc = split[1];
-          if(modifier && desc)
-            modifiers += new _dss.Modifier(_dss.trim(modifier), _dss.trim(desc));
+          if(state && desc)
+            states += new _dss.state(_dss.trim(state), _dss.trim(desc));
         }
         last_indent = indent;
       });
 
-      return modifiers;
-    };
-
-    // Section Comment
-    _this.prototype.section_comment = function(){
-      return (function(sections){
-          var text = '';
-          for(var i=0;i<sections.length;i++){
-            var res = sections[i].match(/Styleguide \d/i);
-            text += (res) ? res : ''; 
-          }
-        return text;
-      })(this.comment_sections());
-    };
-    
-    // TODO: reject logic
-    _this.prototype.modifiers_comment = function(){
-      return this._comment_sections;
-      /*
-      comment_sections[1..-1].reject do |section|
-        section == section_comment
-      end.last
-      */
+      return states;
     };
 
     // Return function
@@ -527,48 +461,105 @@ var dss = (function(){
   /*
    * Build
    *
-   * @param (String) path to file
+   * @param (String) location to file
    * @param (Object) options
    */
-  _dss.Build = (function(){
+  _dss.build = (function(){
 
-    _this = function(path, template_dir, output_dir){
-      _dss.walker(path, function(err, files){
-        var styleguide = new _dss.Parser(files, path);
-        console.log('✓ Styleguide Object: ', styleguide);
-        template_dir = template_dir || '../template';
-        output_dir = output_dir || 'styleguide';
-        _this.render(template_dir, output_dir, styleguide);
-      });
-    };
+    _this = function(location, template_dir, output_dir){
 
-    _this.render = function(template, output, styleguide){
-      _dss.walker
+      // Walk through files
+      _dss.walker(location, function(err, files){
+          
+        // Setup
+        var styleguide = [],
+            parsing = files.length;
 
-      template = template + '/default.mustache';
-      output = output + '/index.html';
-      fs.readFile(template, function(err, html){
-        if(err){ 
-          console.error('× Build error: [readFile] %s', err);
-          process.exit(1);
-        }
-        html = mustache.render((html + ''), styleguide);
-        _dss.writeFile(output, html, function(err) {
-          if(err){
-            console.error('× Build error: [writeFile] %s', err);
-            process.exit(1);
-          } else {
-            console.log('✓ Build process complete.');
-          }
+        // Describe to parsing name
+        _dss.describe('name', function(i, line, block){
+          return line;
         });
+
+        // Describe to parsing description
+        _dss.describe('description', function(i, line, block){
+          return line;
+        });
+
+        // Describe parsing state
+        _dss.describe('state', function(i, line, block){
+          var state = line.split('-');
+          return {
+            name: (state[0]) ? _dss.trim(state[0].replace('.', ' ').replace(':', ' pseudo-class-')) : '',
+            description: (state[1]) ? _dss.trim(state[1]) : ''
+          };
+        });
+
+        // Describe parsing markup
+        _dss.describe('markup', function(i, line, block){
+          return block.splice(i, block.length).join('');
+        });
+
+        // Subscribe to parsing comlete
+        _dss.subscribe('parsing:complete', function(){
+
+          console.log('✓ Styleguide Object: ', styleguide);
+            
+          // Setup output directories
+          template_dir = template_dir || '../template';
+          output_dir = output_dir || 'styleguide';
+          
+          // Setup output template and file
+          var template = template_dir + '/default.mustache',
+              output = output_dir + '/index.html';
+          fs.readFile(template, function(err, html){
+            
+            // Check for build error
+            if(err){ 
+              console.error('× Build error: [readFile] %s', err);
+              process.exit(1);
+            } else {
+
+              // Create HTML ouput
+              html = mustache.render((html + ''), styleguide);
+
+              // Render file
+              _dss.writeFile(output, html, function(err){
+                if(err){
+                  console.error('× Build error: [writeFile] %s', err);
+                  process.exit(1);
+                } else {
+                  console.log('✓ Build complete');
+                }
+              });
+
+            }
+
+          });
+
+        });
+
+        // Parse
+        files.map(function(filename){
+          console.log('• ' + path.relative(location, filename));
+          var parser = new _dss.parser(filename, path.relative(location, filename));
+          parser.parse_blocks(function(parsed){
+            styleguide.push(parsed);
+            if(parsing > 1){
+              parsing = parsing - 1;
+            } else {
+              _dss.publish('parsing:complete');
+            }
+          });
+        });
+
       });
+
     };
 
     // Return function
     return _this;
 
   })();
-
 
   // Return function
   return _dss;

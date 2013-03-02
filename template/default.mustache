@@ -11,30 +11,31 @@
 <body>
   
   <header>
-    <h1>Styleguide Example</h1>
+    <h1></h1>
   </header>
 
   <div id="wrapper">
 
     <nav role="main">
       <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/styleguide">Styleguide</a></li>
+        {{#sections}}
+          {{filename}}
+        {{/sections}}
       </ul>
     </nav>
 
     <div class="styleguide">
 
-      {{#section}}
+      {{#sections}}
       <div class="section">
         
-        <h3>{{section}} <em>{{filename}}</em></h3>
+        <h3>{{filename}}</h3>
 
-        <div class="styleguide-description">
+        <div class="description">
           
           <p>{{description}}</p>
           
-          <ul class="styleguide-modifier">
+          <ul class="state">
             {{#modifiers}}
               <li><strong>{{name}}</strong> - {{description}}</li>
             {{/modifiers}}
@@ -56,7 +57,7 @@
         <pre class="styleguide-code">{{escaped_html}}</pre>
 
       </div>
-      {{/section}}
+      {{/sections}}
 
     </div>
 
