@@ -5,7 +5,7 @@ DSS
 
 **@version 1.0**
 
-**DSS**, Documented Style Sheets, is a [Grunt](http://grunt.js.com) plugin that exposes a [KSS](https://github.com/kneath/kss) style of comment blocking and parser of CSS, LESS, SASS and SCSS code for UI documentation generation. 
+**DSS**, Documented Style Sheets, is a [Grunt](http://gruntjs.com) plugin that exposes a [KSS](https://github.com/kneath/kss) style of comment blocking and parser of CSS, LESS, SASS and SCSS code for UI documentation generation.
 
 ### Example Comment Block
 
