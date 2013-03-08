@@ -12,7 +12,9 @@ module.exports = function(grunt) {
 
 	grunt.initConfig({
 		DSS: {
-			options: {}
+			options: {
+				location: __dirname + '/example/'
+			}
 		}
 	});
 

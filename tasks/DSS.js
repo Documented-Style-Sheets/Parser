@@ -15,6 +15,9 @@ module.exports = function(grunt) {
 
   grunt.registerTask('DSS', 'Parse DSS comment blocks', function() {
 
+    // Setup async promise
+    var promise = this.async();
+
     // Merge task-specific and/or target-specific options with these defaults.
     var options = this.options({
       location: process.cwd(),
@@ -108,8 +111,8 @@ module.exports = function(grunt) {
        * @param (Function) The callback function to be executed when done
        */
       _dss.walker = function(dir, callback) {
-        var results = [];
-        console.log('sss');
+        var results = [];        
+        
         fs.readdir(dir, function(err, list) {
           if (err) return callback(err);
           var pending = list.length;
@@ -472,8 +475,6 @@ module.exports = function(grunt) {
 
         _this = function(location, template_dir, output_dir){
 
-          console.log(location);
-
           // Walk through files
           _dss.walker(location, function(err, files){
             
@@ -525,6 +526,8 @@ module.exports = function(grunt) {
                 if(err){ 
                   grunt.log.writeln('× Build error: [readFile] ' + err);
                   process.exit(1);
+                  promise();
+
                 } else {
 
                   // Create HTML ouput
@@ -535,8 +538,12 @@ module.exports = function(grunt) {
                     if(err){
                       grunt.log.writeln('× Build error: [writeFile] ' + err);
                       process.exit(1);
+                      promise();
+
                     } else {
                       grunt.log.writeln('✓ Build complete');
+                      promise();
+
                     }
                   });
 
@@ -574,7 +581,9 @@ module.exports = function(grunt) {
 
     })();
 
+    // Log options
     grunt.log.writeln(options.location);
+
     // Build Documentation
     dss.build(options.location);
 
