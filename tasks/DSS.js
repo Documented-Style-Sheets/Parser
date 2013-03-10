@@ -21,7 +21,8 @@ module.exports = function(grunt) {
     // Merge task-specific and/or target-specific options with these defaults.
     var options = this.options({
       location: process.cwd(),
-      output: process.cwd() + '/docs/'
+      output: process.cwd() + '/docs/',
+      template: process.cwd() + '/template/'
     });
 
     // DSS Object
@@ -35,13 +36,13 @@ module.exports = function(grunt) {
 
       _dss.publish = function(topic, args){
           _dss.queue[topic] && _dss.queue[topic].forEach(function(callback){
-              callback.apply(_dss, args || []);
+            callback.apply(_dss, args || []);
           });
       };
       
       _dss.subscribe = function(topic, callback){
           if(!_dss.queue[topic])
-              _dss.queue[topic] = [];
+            _dss.queue[topic] = [];
           _dss.queue[topic].push(callback);
           return [topic, callback];
       };
@@ -49,8 +50,8 @@ module.exports = function(grunt) {
       _dss.unsubscribe = function(handle){
           var t = handle[0];
           _dss.queue[t] && _dss.queue[t].forEach(function(idx){
-              if(this == handle[1])
-                  _dss.queue[t].splice(idx, 1);
+            if(this == handle[1])
+              _dss.queue[t].splice(idx, 1);
           });
       };
 
@@ -110,18 +111,20 @@ module.exports = function(grunt) {
        * @param (String) The directory to crawl
        * @param (Function) The callback function to be executed when done
        */
-      _dss.walker = function(dir, callback) {
+      _dss.walker = function(dir, callback){
         var results = [];        
         
-        fs.readdir(dir, function(err, list) {
-          if (err) return callback(err);
+        fs.readdir(dir, function(err, list){
+          if(err) 
+            return callback(err);
           var pending = list.length;
-          if (!pending) return callback(null, results);
+          if(!pending) 
+            return callback(null, results);
           list.forEach(function(file) {
             file = dir + '/' + file;
-            fs.stat(file, function(err, stat) {
-              if (stat && stat.isDirectory()) {
-                _dss.walker(file, function(err, res) {
+            fs.stat(file, function(err, stat){
+              if(stat && stat.isDirectory()){
+                _dss.walker(file, function(err, res){
                   results = results.concat(res);
                   if (!--pending) callback(null, results);
                 });
@@ -149,28 +152,31 @@ module.exports = function(grunt) {
         position = position || 0;
         parts = require('path').normalize(path).split('/');
         if(position >= parts.length){
-            if (callback) {
-                return callback();
-            } else {
-                return true;
-            }
+          if(callback){
+            return callback();
+          } else {
+            return true;
+          }
         }
         var directory = parts.slice(0, position + 1).join('/');
-        fs.stat(directory, function(err) {
-            if (err === null) {
-                _dss.mkdir(path, mode, callback, position + 1);
+        if(!directory)
+          directory = '/';
+        
+        fs.stat(directory, function(err){
+            if(err === null){
+              _dss.mkdir(path, mode, callback, position + 1);
             } else {
-                fs.mkdir(directory, mode, function (err) {
-                    if (err) {
-                        if (callback) {
-                            return callback(err);
-                        } else {
-                            throw err;
-                        }
-                    } else {
-                        _dss.mkdir(path, mode, callback, position + 1);
-                    }
-                })
+              fs.mkdir(directory, mode, function (err){
+                if(err){
+                  if(callback){
+                    return callback(err);
+                  } else {
+                    throw err;
+                  }
+                } else {
+                    _dss.mkdir(path, mode, callback, position + 1);
+                }
+              });
             }
         });
       };
@@ -477,8 +483,6 @@ module.exports = function(grunt) {
 
           // Walk through files
           _dss.walker(location, function(err, files){
-            
-            console.log('....');
               
             // Setup
             var styleguide = [],
@@ -505,21 +509,23 @@ module.exports = function(grunt) {
 
             // Describe parsing markup
             _dss.describe('markup', function(i, line, block){
-              return block.splice(i, block.length).join('');
+              var markup = block.splice(i, block.length).join('');
+              return {
+                example: markup,
+                escaped: String(markup).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+              };
             });
 
             // Subscribe to parsing comlete
             _dss.subscribe('parsing:complete', function(){
-
-              console.log('✓ Styleguide Object: ', styleguide);
                 
               // Setup output directories
               template_dir = template_dir || '../template';
               output_dir = output_dir || 'styleguide';
               
               // Setup output template and file
-              var template = template_dir + '/default.mustache',
-                  output = output_dir + '/index.html';
+              var template = template_dir + 'default.mustache',
+                  output = output_dir + 'index.html';
               fs.readFile(template, function(err, html){
                 
                 // Check for build error
@@ -530,8 +536,10 @@ module.exports = function(grunt) {
 
                 } else {
 
+                  console.log(JSON.stringify(styleguide));
+
                   // Create HTML ouput
-                  html = mustache.render((html + ''), styleguide);
+                  html = mustache.render((html + ''), {project: grunt.file.readJSON('package.json'), files:styleguide});
 
                   // Render file
                   _dss.writeFile(output, html, function(err){
@@ -581,11 +589,8 @@ module.exports = function(grunt) {
 
     })();
 
-    // Log options
-    grunt.log.writeln(options.location);
-
     // Build Documentation
-    dss.build(options.location);
+    dss.build(options.location, options.template, options.output);
 
   });
 
