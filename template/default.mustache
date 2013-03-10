@@ -2,66 +2,77 @@
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
-  <title>Styleguide Example</title>
-  
+  <title>{{project.name}} Styleguide</title>  
   <link rel="stylesheet" href="assets/css/styles.css" type="text/css" />
-  {{stylesheets}}
-
 </head>
 <body>
   
   <header>
-    <h1></h1>
+    <h1>{{project.name}} Styleguide</h1>
+    <p>{{project.version}}</p>
+    <p>{{project.description}}</p>
   </header>
 
   <div id="wrapper">
 
     <nav role="main">
       <ul>
-        {{#sections}}
-          {{filename}}
-        {{/sections}}
+        {{#files}}
+          <li><a href="#" data-file="{{file}}">{{file}}</a></li>
+        {{/files}}
       </ul>
     </nav>
 
     <div class="styleguide">
 
-      {{#sections}}
-      <div class="section">
+      {{#files}}
+      <div class="file">
         
-        <h3>{{filename}}</h3>
+        <h2>Button</h2>
+        
+        {{#blocks}}
+          <div class="description">
+            <h3>{{name}}</h3>
+            {{#description}}
+              <p>{{description}}</p>
+            {{/description}}
+            {{#state}}
+              <p>{{name}} - {{description}}</p>
+            {{/state}}
+          </div>
+          
+          {{#markup}}
+            <div class="example">
+              {{example}}
+            </div>
+          {{/markup}}
 
-        <div class="description">
-          
-          <p>{{description}}</p>
-          
-          <ul class="state">
-            {{#modifiers}}
-              <li><strong>{{name}}</strong> - {{description}}</li>
-            {{/modifiers}}
-          </ul>
-          
-        </div>
-        
-        <div class="styleguide-element">
-          {{example_html}}
-        </div>
+          {{#state}}
+            <div class="example state {{class}}">
+              <div class="name">{{name}}</div>
+              {{#markup}}
+                {{markup}}
+              {{/markup}}
+            </div>
+          {{/state}}
 
-        {{#modifiers}}
-        <div class="styleguide-element styleguide-modifier">
-          <span class="styleguide-modifier-name">{{name}}</span>
-          <!-- example_html.sub('$modifier_class', " #{modifier.class_name}") -->
-        </div>
-        {{/modifiers}}
-        
-        <pre class="styleguide-code">{{escaped_html}}</pre>
+{{#markup}}
+<pre class="markup">
+{{markup.escaped}}
+</pre>
+{{/markup}}
+
+        {{/blocks}}
 
       </div>
-      {{/sections}}
+      {{/files}}
 
     </div>
 
   </div>
+
+  <footer>
+  </footer>
 
   <script src="assets/js/scripts.js"></script>
 
