@@ -10,6 +10,7 @@
 var mustache = require('mustache');
 var fs = require('fs');
 var path = require('path');
+var wrench = require('wrench');
 
 module.exports = function(grunt) {
 
@@ -18,7 +19,7 @@ module.exports = function(grunt) {
     // Setup async promise
     var promise = this.async();
 
-    // Merge task-specific and/or target-specific options with these defaults.
+    // Merge task-specific and/or target-specific options with these defaults
     var options = this.options({
       location: process.cwd(),
       output: process.cwd() + '/docs/',
@@ -147,7 +148,7 @@ module.exports = function(grunt) {
        * @param (Function) The callback function to be executed when complete
        * @param (Number) Current position in the split path array
        */
-      _dss.mkdir = function(path, mode, callback, position) {
+      _dss.mkdir = function(path, mode, callback, position){
         mode = mode || 0777;
         position = position || 0;
         parts = require('path').normalize(path).split('/');
@@ -524,8 +525,13 @@ module.exports = function(grunt) {
               output_dir = output_dir || 'styleguide';
               
               // Setup output template and file
-              var template = template_dir + 'default.mustache',
+              var template = template_dir + 'index.mustache',
                   output = output_dir + 'index.html';
+
+              // Duplicate directory and structure
+              wrench.copyDirSyncRecursive(template_dir, output_dir);
+
+              // Read template
               fs.readFile(template, function(err, html){
                 
                 // Check for build error
@@ -536,20 +542,20 @@ module.exports = function(grunt) {
 
                 } else {
 
-                  console.log(JSON.stringify(styleguide));
-
                   // Create HTML ouput
                   html = mustache.render((html + ''), {project: grunt.file.readJSON('package.json'), files:styleguide});
 
                   // Render file
                   _dss.writeFile(output, html, function(err){
+
                     if(err){
                       grunt.log.writeln('× Build error: [writeFile] ' + err);
                       process.exit(1);
                       promise();
 
                     } else {
-                      grunt.log.writeln('✓ Build complete');
+                      grunt.log.writeln('✓ Styleguide object generated!');
+                      grunt.log.writeln('✓ Documentation created at: ' + output_dir);
                       promise();
 
                     }
