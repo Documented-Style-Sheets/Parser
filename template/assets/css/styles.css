@@ -56,8 +56,52 @@ input:invalid, textarea:invalid { background-color: #f0dddd; }
 table { border-collapse: collapse; border-spacing: 0; }
 td { vertical-align: top; }
 
+    
+    body { 
+        margin: 0; 
+        padding: 0; 
+        color: #333; 
+        font-size: 16px;
+        line-height: 24px;
+    }
+
+    a {
+        color: #1ab4bc;
+    }
+
+    header {
+        width: 100%;
+        background: #efefef;
+        padding: 15% 60px;
+    }
+
+    header h1 {
+        line-height: 100%;
+        font-size: 60px;
+        margin: 0 0 5px 0;
+        padding: 0;
+        float: left;
+    }
 
 
+    header p {
+        margin: 0 0 15px 0;
+        display: block;
+        clear: left;
+        font-weight: bold;
+    }
 
+    #wrapper {
+        padding: 60px;
+    }
 
+    #wrapper nav {
+        float: right;
+        width: 30%;
+        background: #efefef;
+        padding: 20px;
+    }
 
+    footer {
+
+    }
