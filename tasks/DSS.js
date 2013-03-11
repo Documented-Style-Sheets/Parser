@@ -204,6 +204,44 @@ module.exports = function(grunt) {
           return cleaned.replace(/\*\//, '');
         };
 
+        /*
+         * Normalizes the comment block to ignore any consistent preceding
+         * whitespace. Consistent means the same amount of whitespace on every line
+         * of the comment block. Also strips any whitespace at the start and end of
+         * the whole block.
+         *
+         * @param (String) Text block
+         * @return (String) A cleaned up text block
+         */
+         var normalize = function(text_block){
+          if(options.preserve_whitespace)
+            return text_block;
+
+          // Strip out any preceding [whitespace]* that occur on every line. Not
+          // the smartest, but I wonder if I care.
+          text_block = text_block.replace(/^(\s*\*+)/, '');
+
+          // Strip consistent indenting by measuring first line's whitespace
+          var indent_size = false;
+          var unindented = (function(lines){
+            return lines.map(function(line){
+              var preceding_whitespace = line.match(/^\s*/)[0].length;
+              if(!indent_size)
+                indent_size = preceding_whitespace;
+              if(line == ''){
+                return '';
+              } else if(indent_size <= preceding_whitespace && indent_size > 0){
+                return line.slice(indent_size, (line.length - 1));
+              } else {
+                return line;
+              }
+            }).join("\n");
+          })(text_block.split("\n"));
+
+          return _dss.trim(text_block);
+
+        };
+
         lines = lines + '';
         lines.split(/\n/).forEach(function(line){
           
@@ -252,20 +290,15 @@ module.exports = function(grunt) {
         });
         
         // Create new blocks with custom parsing
-        var x = 0, length = _blocks.length;
         _parsed = true;
-        _blocks.forEach(function(block){
-
+        _blocks.forEach(function(block, index){
           // Detect if block is DSS and add to blocks
-          if(_dss.detector(block))
-            blocks.push(parser(block));
-
-          // Run callback if we're done with blocks
-          x++;
-          if(x >= length)
-            callback({ file: options.file, blocks: blocks });
-        
+          block = normalize(block);
+          if(_dss.detect(block))
+            blocks.push(parser(index, lines, block));
         });
+
+        callback({ file: options.file, blocks: blocks });
 
       };
 
@@ -276,9 +309,18 @@ module.exports = function(grunt) {
        * @param (Object) options
        */
       _dss.build = function(location, template_dir, output_dir){
-
+        
         // Find all CSS files
-        var types = ['*.css', '*.sass', '*.scss', '*.less'],
+        var negate = function(dir){ return '!' + path.relative(process.cwd(), dir) + '/**'; },
+            types = [
+              '*.css', 
+              '*.sass', 
+              '*.scss', 
+              '*.less', 
+              negate(template_dir), 
+              negate(output_dir),
+              '!node_modules/**'
+            ], 
             files = grunt.file.expand({ matchBase:true }, types),
             length = files.length,
             styleguide = [];
@@ -297,7 +339,9 @@ module.exports = function(grunt) {
 
             // Check if we're done
             if(length > 1){
+
               length = length - 1;
+
             } else {
               
               // Set output directories
@@ -362,8 +406,8 @@ module.exports = function(grunt) {
     dss.parser('state', function(i, line, block){
       var state = line.split('-');
       return {
-        name: (state[0]) ? _dss.trim(state[0].replace('.', ' ').replace(':', ' pseudo-class-')) : '',
-        description: (state[1]) ? _dss.trim(state[1]) : ''
+        name: (state[0]) ? dss.trim(state[0].replace('.', ' ').replace(':', ' pseudo-class-')) : '',
+        description: (state[1]) ? dss.trim(state[1]) : ''
       };
     });
 
@@ -376,10 +420,6 @@ module.exports = function(grunt) {
       };
     });
 
-    // Parse Utility
-    // dss.parse({ file: filename, path: path.relative(location, filename) }, function(styleguide){
-    //   console.log('parse utility: ', styleguide);
-    // });
 
     // Build Documentation
     dss.build(options.location, options.template, options.output);
