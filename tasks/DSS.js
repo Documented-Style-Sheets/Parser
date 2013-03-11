@@ -215,6 +215,25 @@ module.exports = function(grunt) {
         };
 
         /*
+         * Parses line
+         *
+         * @param (Num) the line number
+         * @param (Num) number of lines
+         * @param (String) line to parse/check
+         * @return (Boolean) result of parsing
+         */
+        _this.prototype.parser = function(lineNum, lines, line){
+          var parts = line.replace(/.*@/, ''),
+              i = parts.indexOf(' '),
+              name = _dss.trim(parts.substr(0, i)),
+              description = _dss.trim(parts.substr(i)),
+              variable = _dss.variables[name];
+          line = {};
+          line[name] = (variable) ? variable.apply(null, [ lineNum, description, lines ] ) : '';
+          return line;
+        };
+
+        /*
          * Check for single-line comment
          *
          * @param (String) line to parse/check
@@ -292,7 +311,8 @@ module.exports = function(grunt) {
               _that = this,
               start = "{start}",
               end = "{/end}",
-              blocks = [];
+              blocks = [],
+              temp = [];
 
           fs.readFile(this._file, function(err, lines){
 
@@ -304,9 +324,11 @@ module.exports = function(grunt) {
             }
 
             lines = lines + '';
+            // var x = 0, length = lines.split(/\n/).length;
 
             lines.split(/\n/).forEach(function(line){
               
+              x++;
               lineNum = lineNum + 1;
               line = line + '';
 
@@ -319,6 +341,10 @@ module.exports = function(grunt) {
                   current_block = parsed;
                   inside_single_line_block = true;
                 }
+                
+                // Check validity of line
+                // if(_that.dss_block(line))
+                //   blocks.push(_that.parser(lineNum, length, line));
               } 
 
               // Parse multi-line comments
@@ -333,26 +359,40 @@ module.exports = function(grunt) {
                   current_block += parsed;
                   inside_multi_line_block = true;
                 }
+
+                // Check validity of line
+                // if(_that.dss_block(line))
+                //   temp.push(_that.parser(lineNum, length, line));
               }
 
               // End a multi-line block
               if(_that.end_multi_line_comment(line)){
                 inside_multi_line_block = false;
                 current_block += end;
+
+                // Store block
+                // blocks.push(temp);
+                // temp = [];
               }
 
               // Store current block if done
               if(!_that.single_line_comment(line) || !inside_multi_line_block){
                 if(current_block){
-                  _that.normalize(current_block);
                   _that._blocks.push(_that.normalize(current_block));
                 }
                 inside_single_line_block = false;
                 current_block = '';
               }
 
+              // Execute callback once all lines are read
+              // if(x >= length){
+              //   _that._parsed = true;
+              //   delete _that.options;
+              //   callback({ file: _that._relative, blocks: blocks });
+              // }
+
             });
-            
+              
             _that._parsed = true;
             var x = 0, length = _that._blocks.length;
             _that._blocks.forEach(function(block){
@@ -554,7 +594,7 @@ module.exports = function(grunt) {
                       promise();
 
                     } else {
-                      console.log(JSON.stringify(styleguide));
+                      // console.log(JSON.stringify(styleguide));
                       grunt.log.writeln('✓ Styleguide object generated!');
                       grunt.log.writeln('✓ Documentation created at: ' + output_dir);
                       promise();
