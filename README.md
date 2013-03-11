@@ -1,4 +1,4 @@
-![](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)
+<img src="http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png" style="float:left;">
 
 DSS
 ===
