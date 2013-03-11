@@ -28,40 +28,43 @@
       {{#files}}
       <div class="file">
         
-        <h2>Button</h2>
+        <h2 id="{{file}}">{{file}}</h2>
         
         {{#blocks}}
-          <div class="description">
-            <h3>{{name}}</h3>
-            {{#description}}
-              <p>{{description}}</p>
-            {{/description}}
-            {{#state}}
-              <p>{{name}} - {{description}}</p>
-            {{/state}}
-          </div>
-          
-          {{#markup}}
-            <div class="example">
-              {{example}}
-            </div>
-          {{/markup}}
+          <div class="block">
 
-          {{#state}}
-            <div class="example state {{class}}">
-              <div class="name">{{name}}</div>
-              {{#markup}}
-                {{markup}}
-              {{/markup}}
+            <div class="description">
+              <h3>{{name}}</h3>
+              {{#description}}
+                <p>{{description}}</p>
+              {{/description}}
+              {{#state}}
+                <p>{{name}} - {{description}}</p>
+              {{/state}}
             </div>
-          {{/state}}
+            
+            {{#markup}}
+              <div class="example">
+                {{example}}
+              </div>
+            {{/markup}}
+
+            {{#state}}
+              <div class="example state {{class}}">
+                <div class="name">{{name}}</div>
+                {{#markup}}
+                  {{markup}}
+                {{/markup}}
+              </div>
+            {{/state}}
 
 {{#markup}}
 <pre class="markup">
 {{markup.escaped}}
 </pre>
 {{/markup}}
-
+        
+        </div>
         {{/blocks}}
 
       </div>
