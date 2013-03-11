@@ -554,6 +554,7 @@ module.exports = function(grunt) {
                       promise();
 
                     } else {
+                      console.log(JSON.stringify(styleguide));
                       grunt.log.writeln('✓ Styleguide object generated!');
                       grunt.log.writeln('✓ Documentation created at: ' + output_dir);
                       promise();

@@ -11,7 +11,11 @@
 module.exports = function(grunt) {
 
 	grunt.initConfig({
-		DSS: {}
+		DSS: {
+			options: {
+				location: __dirname + '/example/'
+			}
+		}
 	});
 
 	grunt.loadTasks('tasks');

@@ -65,7 +65,7 @@ td { vertical-align: top; }
         line-height: 24px;
     }
 
-    a {
+    a, a:hover, a:active, a:visited {
         color: #1ab4bc;
     }
 
@@ -75,32 +75,53 @@ td { vertical-align: top; }
         padding: 15% 60px;
     }
 
-    header h1 {
-        line-height: 100%;
-        font-size: 60px;
-        margin: 0 0 5px 0;
-        padding: 0;
-        float: left;
-    }
+        header h1 {
+            line-height: 100%;
+            font-size: 60px;
+            margin: 0 0 5px 0;
+            padding: 0;
+            float: left;
+        }
 
-
-    header p {
-        margin: 0 0 15px 0;
-        display: block;
-        clear: left;
-        font-weight: bold;
-    }
+        header p {
+            margin: 0 0 15px 0;
+            display: block;
+            clear: left;
+            font-weight: bold;
+        }
 
     #wrapper {
         padding: 60px;
     }
 
-    #wrapper nav {
-        float: right;
-        width: 30%;
-        background: #efefef;
-        padding: 20px;
-    }
+        #wrapper nav {
+            float: right;
+            width: 30%;
+            background: #efefef;
+            padding: 20px;
+        }
+
+        #wrapper .file {
+            border-bottom: 1px solid #efefef;
+            padding: 0 0 60px 0;
+            margin: 0 0 60px 0;
+        }
+
+        #wrapper .block {
+            border: 1px solid #efefef;
+            padding: 20px;
+            margin: 0 0 20px 0;
+        }
+
+        #wraper .description {
+            background: #efefef;
+            margin
+        }
+
+        #wrapper h2 {
+
+        }
+
 
     footer {
 
