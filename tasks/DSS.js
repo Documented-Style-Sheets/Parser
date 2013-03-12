@@ -87,6 +87,64 @@ module.exports = function(grunt) {
       };
 
       /*
+       * Check if object is empty
+       *
+       * @param (Object) The object to check if it's empty
+       * @return (Boolean) The result of the test
+       */ 
+      _dss.isEmpty = function(obj){
+        if (obj === null || obj === undefined) 
+          return true;
+        if (obj.length && obj.length > 0) 
+          return false;
+        if (obj.length === 0) 
+          return true;
+        for(var key in obj){
+          if(Object.prototype.hasOwnProperty.call(obj, key))
+            return false;
+        }
+        return true;
+      }
+
+      /*
+       * Iterate over an object
+       *
+       * @param (Object) The object to iterate over
+       * @param (Function) Callback function to use when iterating
+       * @param (Object) Optional context to pass to iterator
+       */
+      _dss.each = function(obj, iterator, context){
+        if(obj == null) return;
+        if(obj.length === +obj.length){
+          for(var i = 0, l = obj.length; i < l; i++){
+            if(iterator.call(context, obj[i], i, obj) === {}) return;
+          }
+        } else {
+          for(var key in obj){
+            if(_.has(obj, key)){
+              if(iterator.call(context, obj[key], key, obj) === {}) return;
+            }
+          }
+        }
+      };
+
+      /*
+       * Extend an object
+       *
+       * @param (Object) The object to extend
+       */
+      _dss.extend = function(obj){
+        _dss.each(Array.prototype.slice.call(arguments, 1), function(source){
+          if(source){
+            for(var prop in source){
+              obj[prop] = source[prop];
+            }
+          }
+        });
+        return obj;
+      };
+
+      /*
        * Squeeze unnecessary extra characters/string
        *
        * @param (String) The string to be squeeze
@@ -120,7 +178,7 @@ module.exports = function(grunt) {
             _blocks = [],
             parsed = '',
             blocks = [],
-            temp = [],
+            temp = {},
             lines = grunt.file.read(options.file),
             lineNum = 0;
 
@@ -287,15 +345,28 @@ module.exports = function(grunt) {
             inside_single_line_block = false;
             current_block = '';
           }
+
         });
         
         // Create new blocks with custom parsing
         _parsed = true;
         _blocks.forEach(function(block, index){
-          // Detect if block is DSS and add to blocks
+          
+          // Detect if we're done
+          var check = block.match(end, 'gi');   
+          
+          // Detect if we need to add to temporary array
           block = normalize(block);
           if(_dss.detect(block))
-            blocks.push(parser(index, lines, block));
+            temp = _dss.extend(temp, parser(index, lines, block));
+          
+          // Push into blocks if we're done
+          if(check){
+            if(!_dss.isEmpty(temp))
+              blocks.push(temp);
+            temp = {};
+          }
+
         });
 
         callback({ file: options.file, blocks: blocks });
