@@ -420,6 +420,10 @@ module.exports = function(grunt) {
       };
     });
 
+    // Describe custom parsers
+    for(key in options.parsers){
+      dss.parser(key, options.parsers[key]);
+    }
 
     // Build Documentation
     dss.build(options.location, options.template, options.output);
