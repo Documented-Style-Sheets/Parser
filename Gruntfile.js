@@ -13,7 +13,9 @@ module.exports = function(grunt) {
 	grunt.initConfig({
 		DSS: {
 			options: {
-				location: __dirname + '/example/'
+				location: process.cwd(),
+				output: process.cwd() + '/docs/',
+      			template: process.cwd() + '/template/'
 			}
 		}
 	});

@@ -34,7 +34,7 @@ module.exports = function(grunt) {
       // Store reference
       var _dss = function(){};
 
-      // Detect
+      // Default detect function
       _dss.detect = function(){
         return true;
       };
@@ -355,7 +355,7 @@ module.exports = function(grunt) {
           }
 
         });
-        
+
         // Create new blocks with custom parsing
         _parsed = true;
         _blocks.forEach(function(block, index){
@@ -404,6 +404,8 @@ module.exports = function(grunt) {
             length = files.length,
             styleguide = [];
 
+        // TODO: location is usless, grunt expand may not be what I need
+
         // Parse files
         files.map(function(filename){
             
@@ -416,8 +418,6 @@ module.exports = function(grunt) {
             // Add comment block to styleguide
             styleguide.push(parsed);
 
-            console.log(JSON.stringify(styleguide));
-
             // Check if we're done
             if(length > 1){
 
@@ -425,6 +425,7 @@ module.exports = function(grunt) {
 
             } else {
               
+              // TODO: remove this
               // Set output directories
               template_dir = template_dir || '../template';
               output_dir = output_dir || 'styleguide';
