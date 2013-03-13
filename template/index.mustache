@@ -8,14 +8,15 @@
 <body>
   
   <header>
-    <h1>{{project.name}} Styleguide</h1>
-    <p>{{project.version}}</p>
-    <p>{{project.description}}</p>
+    <h1>{{project.name}} styleguide</h1>
+    <p class="version">v.<strong>{{project.version}}</strong></p>
+    <p class="description">{{project.description}}</p>
   </header>
 
   <div id="wrapper">
 
     <nav role="main">
+      <h2>Table of Contents</h2>
       <ul>
         {{#files}}
           <li><a href="#{{file}}" data-file="{{file}}">{{file}}</a></li>
@@ -28,18 +29,20 @@
       {{#files}}
       <div class="file">
         
-        <h2 id="{{file}}">{{file}}</h2>
+        <h3 id="{{file}}">{{file}}</h3>
         
         {{#blocks}}
+          
           <div class="block">
 
-            <div class="description">
-              <h3>{{name}}</h3>
+            <div class="info">
+              <h4>{{name}}</h4>
               {{#description}}
-                <p>{{description}}</p>
+                <p class="description">{{description}}</p>
               {{/description}}
+              
               {{#state}}
-                <p>{{name}} - {{description}}</p>
+                <p class="state"><span>{{name}}</span> - {{description}}</p>
               {{/state}}
             </div>
             

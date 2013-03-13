@@ -190,7 +190,7 @@ module.exports = function(grunt) {
          * @param (String) line to parse/check
          * @return (Boolean) result of parsing
          */
-        var parser = function(lineNum, lines, line){
+        var parser = function(block, lineNum, lines, line){
           var parts = line.replace(/.*@/, ''),
               i = parts.indexOf(' '),
               name = _dss.trim(parts.substr(0, i)),
@@ -198,7 +198,15 @@ module.exports = function(grunt) {
               variable = _dss.parsers[name];
           line = {};
           line[name] = (variable) ? variable.apply(null, [lineNum, description, lines]) : '';
-          return line;
+
+          if(block[name]){
+            if(!_dss.isArray(block[name]))
+              block[name] = [ block[name] ];
+            block[name].push(line[name]);
+          } else {
+            block = _dss.extend(block, line);
+          }
+          return block;
         };
 
         /*
@@ -358,7 +366,7 @@ module.exports = function(grunt) {
           // Detect if we need to add to temporary array
           block = normalize(block);
           if(_dss.detect(block))
-            temp = _dss.extend(temp, parser(index, lines, block));
+            temp = parser(temp, index, lines, block);
           
           // Push into blocks if we're done
           if(check){
@@ -407,6 +415,8 @@ module.exports = function(grunt) {
             
             // Add comment block to styleguide
             styleguide.push(parsed);
+
+            console.log(JSON.stringify(styleguide));
 
             // Check if we're done
             if(length > 1){
