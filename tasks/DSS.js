@@ -394,7 +394,7 @@ module.exports = function(grunt) {
         files.map(function(filename){
 
           // Report file
-          grunt.log.writeln('• ' + filename);
+          grunt.log.writeln('• ' + grunt.log.wordlist([filename], {color: 'cyan'}));
 
           // Parse
           _dss.parse({ file: filename }, function(parsed){
@@ -427,7 +427,7 @@ module.exports = function(grunt) {
 
               // Report build
               grunt.log.writeln('✓ Styleguide object generated!');
-              grunt.log.writeln('✓ Documentation created at: ' + output_dir);
+              grunt.log.writeln('✓ Documentation created at: ' + grunt.log.wordlist([output_dir], {color: 'cyan'}));
 
               // Return promise
               promise();
