@@ -16,17 +16,17 @@ var wrench = require('wrench');
 module.exports = function(grunt) {
 
   // Register DSS
-  grunt.registerTask('DSS', 'Parse DSS comment blocks', function() {
+  grunt.registerMultiTask('DSS', 'Parse DSS comment blocks', function() {
 
     // Setup async promise
     var promise = this.async();
 
     // Merge task-specific and/or target-specific options with defaults
     var options = this.options({
-      location: process.cwd(),
-      output: process.cwd() + '/docs/',
-      template: process.cwd() + '/template/'
+      template: __dirname + '/../template/'
     });
+
+    grunt.verbose.writeflags(options, 'Options');
 
     // DSS Object
     var dss = (function(){
@@ -44,7 +44,7 @@ module.exports = function(grunt) {
        *
        * @param (Function) The callback to be used to detect variables
        */
-      _dss.detector = function(callback){ 
+      _dss.detector = function(callback){
         _dss.detect = callback;
       };
 
@@ -81,7 +81,7 @@ module.exports = function(grunt) {
        *
        * @param (Object) The object to check
        * @return (Boolean) The result of the test
-       */ 
+       */
       _dss.isArray = function(obj){
         return toString.call(obj) == '[object Array]';
       };
@@ -91,13 +91,13 @@ module.exports = function(grunt) {
        *
        * @param (Object) The object to check if it's empty
        * @return (Boolean) The result of the test
-       */ 
+       */
       _dss.isEmpty = function(obj){
-        if (obj === null || obj === undefined) 
+        if (obj === null || obj === undefined)
           return true;
-        if (obj.length && obj.length > 0) 
+        if (obj.length && obj.length > 0)
           return false;
-        if (obj.length === 0) 
+        if (obj.length === 0)
           return true;
         for(var key in obj){
           if(Object.prototype.hasOwnProperty.call(obj, key))
@@ -152,21 +152,21 @@ module.exports = function(grunt) {
        * @return (String) The modified string
        */
       _dss.squeeze = function(str, def){
-        return str.replace(/\s{2,}/g, def); 
+        return str.replace(/\s{2,}/g, def);
       };
 
       /*
-       * Takes and file path of a text file and extracts comments from it.
+       * Takes a file and extracts comments from it.
        *
-       * @param (String) path to file
        * @param (Object) options
+       * @param (Function) callback
        */
       _dss.parse = function(options, callback){
-        
+
         // Options
         options = (options) ? options : {};
         options.preserve_whitespace = !!(options.preserve_whitespace);
-        
+
         // Setup
         var _this = this,
             current_block = '',
@@ -211,7 +211,7 @@ module.exports = function(grunt) {
 
         /*
          * Comment block
-         */        
+         */
         var block = function(){
           this._raw = (comment_text) ? comment_text : '';
           this._filename = filename;
@@ -259,7 +259,7 @@ module.exports = function(grunt) {
           return line.replace(/\s*\/\//, '');
         };
 
-        /* 
+        /*
          * Remove comment identifiers for multi-line comments.
          *
          * @param (String) line to parse/check
@@ -310,20 +310,20 @@ module.exports = function(grunt) {
 
         lines = lines + '';
         lines.split(/\n/).forEach(function(line){
-          
+
           lineNum = lineNum + 1;
           line = line + '';
 
           // Parse Single line comment
           if(single_line_comment(line)){
-            parsed = _this.parse_single_line(line);
+            parsed = parse_single_line(line);
             if(inside_single_line_block){
               current_block += start + parsed + end;
             } else {
               current_block = parsed;
               inside_single_line_block = true;
             }
-          } 
+          }
 
           // Parse multi-line comments
           if(start_multi_line_comment(line)){
@@ -359,15 +359,15 @@ module.exports = function(grunt) {
         // Create new blocks with custom parsing
         _parsed = true;
         _blocks.forEach(function(block, index){
-          
+
           // Detect if we're done
-          var check = block.match(end, 'gi');   
-          
+          var check = block.match(end, 'gi');
+
           // Detect if we need to add to temporary array
           block = normalize(block);
           if(_dss.detect(block))
             temp = parser(temp, index, lines, block);
-          
+
           // Push into blocks if we're done
           if(check){
             if(!_dss.isEmpty(temp))
@@ -384,37 +384,21 @@ module.exports = function(grunt) {
       /*
        * Build
        *
-       * @param (String) location to file
        * @param (Object) options
        */
-      _dss.build = function(location, template_dir, output_dir){
-        
-        // Find all CSS files
-        var negate = function(dir){ return '!' + path.relative(process.cwd(), dir) + '/**'; },
-            types = [
-              '*.css', 
-              '*.sass', 
-              '*.scss', 
-              '*.less', 
-              negate(template_dir), 
-              negate(output_dir),
-              '!node_modules/**'
-            ], 
-            files = grunt.file.expand({ matchBase:true }, types),
-            length = files.length,
+      _dss.build = function(files, template_dir, output_dir){
+        var length = files.length,
             styleguide = [];
-
-        // TODO: location is usless, grunt expand may not be what I need
 
         // Parse files
         files.map(function(filename){
-            
+
           // Report file
-          grunt.log.writeln('• ' + path.relative(location, filename));
-          
+          grunt.log.writeln('• ' + filename);
+
           // Parse
-          _dss.parse({ file: filename, path: path.relative(location, filename) }, function(parsed){
-            
+          _dss.parse({ file: filename }, function(parsed){
+
             // Add comment block to styleguide
             styleguide.push(parsed);
 
@@ -424,11 +408,6 @@ module.exports = function(grunt) {
               length = length - 1;
 
             } else {
-              
-              // TODO: remove this
-              // Set output directories
-              template_dir = template_dir || '../template';
-              output_dir = output_dir || 'styleguide';
 
               // Set output template and file
               var template = template_dir + 'index.mustache',
@@ -439,7 +418,7 @@ module.exports = function(grunt) {
 
               // Read template
               var html = grunt.file.read(template);
-                
+
               // Create HTML ouput
               html = mustache.render((html + ''), {project: grunt.file.readJSON('package.json'), files:styleguide});
 
@@ -466,7 +445,7 @@ module.exports = function(grunt) {
 
     })();
 
-    // Describe detection pattern 
+    // Describe detection pattern
     dss.detector(function(line){
       if(typeof line !== 'string')
         return false;
@@ -508,8 +487,19 @@ module.exports = function(grunt) {
     }
 
     // Build Documentation
-    dss.build(options.location, options.template, options.output);
+    this.files.forEach(function(f) {
+      var src = f.src.filter(function(filepath) {
+        // Warn on and remove invalid source files (if nonull was set).
+        if (!grunt.file.exists(filepath)) {
+          grunt.log.warn('Source file "' + filepath + '" not found.');
+          return false;
+        } else {
+          return true;
+        }
+      });
 
+      dss.build(src, options.template, f.dest);
+    });
   });
 
 };
