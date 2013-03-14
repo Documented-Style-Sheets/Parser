@@ -20,10 +20,10 @@
     "node": ">= 0.8.0"
   },
   "dependencies": {
-    "mustache": "0.7.0"
+    "mustache": "0.7.0",
+    "wrench":"1.4.4"
   },
   "devDependencies": {
-    "wrench":"1.4.4",
     "grunt": "~0.4.0"
   },
   "peerDependencies": {
