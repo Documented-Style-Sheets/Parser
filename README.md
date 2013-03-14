@@ -1,4 +1,4 @@
-![](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)
+![DSS](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)
 
 DSS
 ===
@@ -48,7 +48,15 @@ In your project's Gruntfile, add a section named `DSS` to the data object passed
 grunt.initConfig({
   DSS: {
     options: {
-      // Task-specific options go here.
+      // commons options go here.
+    }
+    docs: {
+      options: {
+        // Task-specific options go here.
+      },
+      files: {
+        'dest/': 'source/**/*'
+      }
     }
   },
 })
@@ -58,15 +66,9 @@ grunt.initConfig({
 
 #### options.template
 Type: `String`
-Default value: `/template/`
+Default value: `{task_path}/template/`
 
 A relative path to a `mustache` template to be used instead of the default
-
-#### options.output
-Type: `String`
-Default value: `/docs/`
-
-A relative path to a the directory you'd like to generate the documentation
 
 #### options.parsers
 Type: `Object`
@@ -80,18 +82,21 @@ An object filled with key value pairs of functions to be used when parsing comme
 ```javascript
 grunt.initConfig({
   DSS: {
-    options: {
-      location: __dirname + '/css/',
-      output: __dirname + '/api/'
-      parsers: {
-        // Finds @link in comment blocks
-        link: function(i, line, block){
+    docs: {
+      options: {
+        parsers: {
+          // Finds @link in comment blocks
+          link: function(i, line, block){
 
-          // Replace link with HTML wrapped version
-          var exp = /(b(https?|ftp|file)://[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
-          line.replace(exp, "<a href='$1'>$1</a>");
-          return line;
+            // Replace link with HTML wrapped version
+            var exp = /(b(https?|ftp|file)://[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
+            line.replace(exp, "<a href='$1'>$1</a>");
+            return line;
+          }
         }
+      },
+      files: {
+        'api/': 'css/**/*.{css,scss,sass,less,styl}'
       }
     }
   }

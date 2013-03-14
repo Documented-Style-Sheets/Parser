@@ -12,15 +12,17 @@ module.exports = function(grunt) {
 
 	grunt.initConfig({
 		DSS: {
-			options: {
-				location: process.cwd(),
-				output: process.cwd() + '/docs/',
-      			template: process.cwd() + '/template/'
+			docs: {
+				options: {
+					template: 'template/'
+				},
+				files: {
+					'docs/': 'example/**/*.{css,scss,sass,less,styl}'
+				}
 			}
 		}
 	});
 
 	grunt.loadTasks('tasks');
 	grunt.registerTask('default', ['DSS']);
-
 };
