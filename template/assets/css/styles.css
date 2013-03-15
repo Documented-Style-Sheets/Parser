@@ -196,6 +196,14 @@ td { vertical-align: top; }
                 padding: 10px;
             }
 
+        #wrapper .markup {
+            margin: 0;
+            padding: 24px 20px 20px;
+            font-size: 13px;
+            font-family: Consolas, "Liberation Mono", Courier, monospace;
+            background: #efefef;
+        }
+
     footer {
 
     }

@@ -466,7 +466,7 @@ module.exports = function(grunt) {
 
     // Describe parsing a state
     dss.parser('state', function(i, line, block, file){
-      var state = line.split('-');
+      var state = line.split(' - ');
       return {
         name: (state[0]) ? dss.trim(state[0].replace('.', ' ').replace(':', ' pseudo-class-')) : '',
         description: (state[1]) ? dss.trim(state[1]) : ''

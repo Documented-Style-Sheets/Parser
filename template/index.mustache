@@ -47,25 +47,25 @@
             </div>
             
             {{#markup}}
+              
               <div class="example">
                 {{{example}}}
               </div>
-            {{/markup}}
+            
+              {{#state}}
+                <div class="example state {{class}}">
+                  <div class="name">{{name}}</div>
+                  {{#markup}}
+                    {{markup}}
+                  {{/markup}}
+                </div>
+              {{/state}}
 
-            {{#state}}
-              <div class="example state {{class}}">
-                <div class="name">{{name}}</div>
-                {{#markup}}
-                  {{markup}}
-                {{/markup}}
-              </div>
-            {{/state}}
-
-{{#markup}}
 <pre class="markup">
 {{{markup.escaped}}}
 </pre>
-{{/markup}}
+            
+            {{/markup}}
         
         </div>
         {{/blocks}}

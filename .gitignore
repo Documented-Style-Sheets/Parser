@@ -2,3 +2,5 @@
 .DS_STORE
 .DS_Store?
 /docs/
+/example/articleview.scss
+/example/config.rb
