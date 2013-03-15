@@ -168,10 +168,13 @@ td { vertical-align: top; }
 
             #wrapper .info .state {
                 font-size: 12px;
+                margin: 0;
+                padding: 0;
             }
 
                 #wrapper .info .state span {
                     font-weight: bold;
+                    font-family: Consolas, "Liberation Mono", Courier, monospace;
                 }
 
         #wrapper .example {   

@@ -468,7 +468,8 @@ module.exports = function(grunt) {
     dss.parser('state', function(i, line, block, file){
       var state = line.split(' - ');
       return {
-        name: (state[0]) ? dss.trim(state[0].replace('.', ' ').replace(':', ' pseudo-class-')) : '',
+        name: (state[0]) ? dss.trim(state[0]) : '',
+        escaped: (state[0]) ? dss.trim(state[0].replace('.', ' ').replace(':', ' pseudo-class-')) : '',
         description: (state[1]) ? dss.trim(state[1]) : ''
       };
     });
