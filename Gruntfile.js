@@ -58,6 +58,6 @@ module.exports = function(grunt) {
   grunt.registerTask('test', ['clean', 'DSS', 'nodeunit']);
 
   // By default run the DSS task to create docs
-  grunt.registerTask('default', ['DSS']);
+  grunt.registerTask('default', ['clean', 'DSS']);
 
 };
