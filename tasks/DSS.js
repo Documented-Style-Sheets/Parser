@@ -191,13 +191,18 @@ module.exports = function(grunt) {
          * @return (Boolean) result of parsing
          */
         var parser = function(block, lineNum, lines, line){
-          var parts = line.replace(/.*@/, ''),
-              i = parts.indexOf(' '),
+          var indexer = function(str, find){
+                return (str.indexOf(find) > 0) ? str.indexOf(find) : false;
+              },
+              parts = line.replace(/.*@/, ''),
+              i = indexer(parts, ' ') || indexer(parts, '\n') || indexer(parts, '\r') || parts.length,
               name = _dss.trim(parts.substr(0, i)),
               description = _dss.trim(parts.substr(i)),
               variable = _dss.parsers[name];
           line = {};
           line[name] = (variable) ? variable.apply(null, [lineNum, description, lines]) : '';
+          
+          console.log(lines.length);
 
           if(block[name]){
             if(!_dss.isArray(block[name]))
@@ -356,6 +361,8 @@ module.exports = function(grunt) {
 
         });
 
+        console.log('BLOCKS:', _blocks.length);
+
         // Create new blocks with custom parsing
         _parsed = true;
         _blocks.forEach(function(block, index){
@@ -377,6 +384,7 @@ module.exports = function(grunt) {
 
         });
 
+        //console.log(JSON.stringify(blocks));
         callback({ file: options.file, blocks: blocks });
 
       };
@@ -454,17 +462,17 @@ module.exports = function(grunt) {
     });
 
     // Describe parsing a name
-    dss.parser('name', function(i, line, block){
+    dss.parser('name', function(i, line, lines){
       return line;
     });
 
     // Describe parsing a description
-    dss.parser('description', function(i, line, block){
+    dss.parser('description', function(i, line, lines){
       return line;
     });
 
     // Describe parsing a state
-    dss.parser('state', function(i, line, block){
+    dss.parser('state', function(i, line, lines){
       var state = line.split('-');
       return {
         name: (state[0]) ? dss.trim(state[0].replace('.', ' ').replace(':', ' pseudo-class-')) : '',
@@ -473,8 +481,9 @@ module.exports = function(grunt) {
     });
 
     // Describe parsing markup
-    dss.parser('markup', function(i, line, block){
-      var markup = block.splice(i, block.length).join('');
+    dss.parser('markup', function(i, line, lines){
+      console.log('MARKUP');
+      var markup = lines.split('').splice(i, lines.length).join('');
       return {
         example: markup,
         escaped: String(markup).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
