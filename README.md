@@ -1,6 +1,6 @@
 ![DSS](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)
 
-DSS
+DSS [![Build Status](https://secure.travis-ci.org/darcyclarke/DSS.png?branch=master)](http://travis-ci.org/darcyclarke/DSS)
 ===
 
 **@version 1.0**
