@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 DSS
+=======
+![DSS](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)
+
+DSS [![Build Status](https://secure.travis-ci.org/darcyclarke/DSS.png?branch=master)](http://travis-ci.org/darcyclarke/DSS)
+>>>>>>> 308468da85e1653f268dd51ea53e2e3b7101e3f7
 ===
 
 **@version 1.0**
