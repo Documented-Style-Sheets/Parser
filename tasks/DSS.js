@@ -87,24 +87,19 @@ module.exports = function(grunt) {
       };
 
       /*
-       * Check if object is empty
+       * Check the size of an object
        *
-       * @param (Object) The object to check if it's empty
+       * @param (Object) The object to check
        * @return (Boolean) The result of the test
        */
-      _dss.isEmpty = function(obj){
-        if (obj === null || obj === undefined)
-          return true;
-        if (obj.length && obj.length > 0)
-          return false;
-        if (obj.length === 0)
-          return true;
+      _dss.size = function(obj){
+        var size = 0;
         for(var key in obj){
           if(Object.prototype.hasOwnProperty.call(obj, key))
-            return false;
+            size++;
         }
-        return true;
-      }
+        return size;
+      };
 
       /*
        * Iterate over an object
@@ -156,6 +151,44 @@ module.exports = function(grunt) {
       };
 
       /*
+       * Normalizes the comment block to ignore any consistent preceding
+       * whitespace. Consistent means the same amount of whitespace on every line
+       * of the comment block. Also strips any whitespace at the start and end of
+       * the whole block.
+       *
+       * @param (String) Text block
+       * @return (String) A cleaned up text block
+       */
+      _dss.normalize = function(text_block){
+        if(options.preserve_whitespace)
+          return text_block;
+
+        // Strip out any preceding [whitespace]* that occur on every line. Not
+        // the smartest, but I wonder if I care.
+        text_block = text_block.replace(/^(\s*\*+)/, '');
+
+        // Strip consistent indenting by measuring first line's whitespace
+        var indent_size = false;
+        var unindented = (function(lines){
+          return lines.map(function(line){
+            var preceding_whitespace = line.match(/^\s*/)[0].length;
+            if(!indent_size)
+              indent_size = preceding_whitespace;
+            if(line == ''){
+              return '';
+            } else if(indent_size <= preceding_whitespace && indent_size > 0){
+              return line.slice(indent_size, (line.length - 1));
+            } else {
+              return line;
+            }
+          }).join("\n");
+        })(text_block.split("\n"));
+
+        return _dss.trim(text_block);
+
+      };
+
+      /*
        * Takes a file and extracts comments from it.
        *
        * @param (Object) options
@@ -172,6 +205,7 @@ module.exports = function(grunt) {
             current_block = '',
             inside_single_line_block = false,
             inside_multi_line_block = false,
+            last_line = '',
             start = "{start}",
             end = "{/end}",
             _parsed = false,
@@ -190,7 +224,7 @@ module.exports = function(grunt) {
          * @param (String) line to parse/check
          * @return (Boolean) result of parsing
          */
-        var parser = function(block, lineNum, lines, line){
+        var parser = function(temp, line, block, file){
           var indexer = function(str, find){
                 return (str.indexOf(find) > 0) ? str.indexOf(find) : false;
               },
@@ -198,20 +232,19 @@ module.exports = function(grunt) {
               i = indexer(parts, ' ') || indexer(parts, '\n') || indexer(parts, '\r') || parts.length,
               name = _dss.trim(parts.substr(0, i)),
               description = _dss.trim(parts.substr(i)),
-              variable = _dss.parsers[name];
+              variable = _dss.parsers[name],
+              index = block.indexOf(line);
           line = {};
-          line[name] = (variable) ? variable.apply(null, [lineNum, description, lines]) : '';
-          
-          console.log(lines.length);
+          line[name] = (variable) ? variable.apply(null, [index, description, block, file]) : '';
 
-          if(block[name]){
-            if(!_dss.isArray(block[name]))
-              block[name] = [ block[name] ];
-            block[name].push(line[name]);
+          if(temp[name]){
+            if(!_dss.isArray(temp[name]))
+              temp[name] = [ temp[name] ];
+            temp[name].push(line[name]);
           } else {
-            block = _dss.extend(block, line);
+            temp = _dss.extend(temp, line);
           }
-          return block;
+          return temp;
         };
 
         /*
@@ -275,44 +308,6 @@ module.exports = function(grunt) {
           return cleaned.replace(/\*\//, '');
         };
 
-        /*
-         * Normalizes the comment block to ignore any consistent preceding
-         * whitespace. Consistent means the same amount of whitespace on every line
-         * of the comment block. Also strips any whitespace at the start and end of
-         * the whole block.
-         *
-         * @param (String) Text block
-         * @return (String) A cleaned up text block
-         */
-         var normalize = function(text_block){
-          if(options.preserve_whitespace)
-            return text_block;
-
-          // Strip out any preceding [whitespace]* that occur on every line. Not
-          // the smartest, but I wonder if I care.
-          text_block = text_block.replace(/^(\s*\*+)/, '');
-
-          // Strip consistent indenting by measuring first line's whitespace
-          var indent_size = false;
-          var unindented = (function(lines){
-            return lines.map(function(line){
-              var preceding_whitespace = line.match(/^\s*/)[0].length;
-              if(!indent_size)
-                indent_size = preceding_whitespace;
-              if(line == ''){
-                return '';
-              } else if(indent_size <= preceding_whitespace && indent_size > 0){
-                return line.slice(indent_size, (line.length - 1));
-              } else {
-                return line;
-              }
-            }).join("\n");
-          })(text_block.split("\n"));
-
-          return _dss.trim(text_block);
-
-        };
-
         lines = lines + '';
         lines.split(/\n/).forEach(function(line){
 
@@ -323,7 +318,7 @@ module.exports = function(grunt) {
           if(single_line_comment(line)){
             parsed = parse_single_line(line);
             if(inside_single_line_block){
-              current_block += start + parsed + end;
+              current_block += '\n' + parsed;
             } else {
               current_block = parsed;
               inside_single_line_block = true;
@@ -331,13 +326,10 @@ module.exports = function(grunt) {
           }
 
           // Parse multi-line comments
-          if(start_multi_line_comment(line)){
-            current_block += start;
-          }
           if(start_multi_line_comment(line) || inside_multi_line_block){
             parsed = parse_multi_line(line);
             if(inside_multi_line_block){
-              current_block += parsed;
+              current_block += '\n' + parsed;
             } else {
               current_block += parsed;
               inside_multi_line_block = true;
@@ -347,44 +339,45 @@ module.exports = function(grunt) {
           // End a multi-line block
           if(end_multi_line_comment(line)){
             inside_multi_line_block = false;
-            current_block += end;
           }
 
           // Store current block if done
-          if(!single_line_comment(line) || !inside_multi_line_block){
+          if(!single_line_comment(line) && !inside_multi_line_block){
             if(current_block){
-              _blocks.push(current_block);
+              _blocks.push(_dss.normalize(current_block));
             }
             inside_single_line_block = false;
             current_block = '';
+            last_line = '';
           }
 
         });
-
-        console.log('BLOCKS:', _blocks.length);
+  
+        // Done first pass
+        _parsed = true;
 
         // Create new blocks with custom parsing
-        _parsed = true;
-        _blocks.forEach(function(block, index){
+        _blocks.forEach(function(block){
 
-          // Detect if we're done
-          var check = block.match(end, 'gi');
+          // Remove extra whitespace
+          block = block.split('\n').filter(function(line){
+            return (_dss.trim(_dss.normalize(line)));
+          }).join('\n');
 
-          // Detect if we need to add to temporary array
-          block = normalize(block);
-          if(_dss.detect(block))
-            temp = parser(temp, index, lines, block);
+          // Split block into lines
+          block.split('\n').forEach(function(line){
+            if(_dss.detect(line))
+              temp = parser(temp, _dss.normalize(line), block, lines);
+          });
+          
+          // Push to blocks if object isn't empty
+          if(_dss.size(temp))
+            blocks.push(temp);
+          temp = {};
 
-          // Push into blocks if we're done
-          if(check){
-            if(!_dss.isEmpty(temp))
-              blocks.push(temp);
-            temp = {};
-          }
-
-        });
-
-        //console.log(JSON.stringify(blocks));
+        }); 
+        
+        // Execute callback with filename and blocks
         callback({ file: options.file, blocks: blocks });
 
       };
@@ -462,17 +455,17 @@ module.exports = function(grunt) {
     });
 
     // Describe parsing a name
-    dss.parser('name', function(i, line, lines){
+    dss.parser('name', function(i, line, block, file){
       return line;
     });
 
     // Describe parsing a description
-    dss.parser('description', function(i, line, lines){
+    dss.parser('description', function(i, line, block, file){
       return line;
     });
 
     // Describe parsing a state
-    dss.parser('state', function(i, line, lines){
+    dss.parser('state', function(i, line, block, file){
       var state = line.split('-');
       return {
         name: (state[0]) ? dss.trim(state[0].replace('.', ' ').replace(':', ' pseudo-class-')) : '',
@@ -481,12 +474,29 @@ module.exports = function(grunt) {
     });
 
     // Describe parsing markup
-    dss.parser('markup', function(i, line, lines){
-      console.log('MARKUP');
-      var markup = lines.split('').splice(i, lines.length).join('');
+    dss.parser('markup', function(i, line, block, file){
+      var markup = block.split('').splice(i, block.length).join('');
+
+      markup = (function(markup){
+        var ret = [];
+        markup.split('\n').forEach(function(line){
+          var pattern = '*',
+              index = line.indexOf(pattern);
+
+          if(index > 0 && index < 10)
+            line = line.split('').splice((index + pattern.length), line.length).join('');
+
+          line = dss.trim(line);
+          if(line && line != '@markup')
+            ret.push(line);
+
+        });
+        return ret.join('');
+      })(markup);
+
       return {
         example: markup,
-        escaped: String(markup).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+        escaped: markup.replace(/</g, '&lt;').replace(/>/g, '&gt;')
       };
     });
 
