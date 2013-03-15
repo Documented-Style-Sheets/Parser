@@ -376,7 +376,7 @@ module.exports = function(grunt) {
           temp = {};
 
         }); 
-        
+                
         // Execute callback with filename and blocks
         callback({ file: options.file, blocks: blocks });
 
