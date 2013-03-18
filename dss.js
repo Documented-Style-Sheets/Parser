@@ -354,13 +354,9 @@ var dss = (function(){
 
 })();
 
-// Export the Underscore object for **Node.js** and **"CommonJS"**,
-// backwards-compatibility for the old `require()` API. If we're not
-// CommonJS, add `_` to the global object via a string identifier
-// the Closure Compiler "advanced" mode. Registration as an AMD
-// via define() happens at the end of this file
-if (typeof exports !== 'undefined') {
-  if (typeof module !== 'undefined' && module.exports) {
+// Module exports
+if(typeof exports !== 'undefined'){
+  if(typeof module !== 'undefined' && module.exports){
     exports = module.exports = dss;
   }
   exports.dss = dss;
@@ -368,10 +364,9 @@ if (typeof exports !== 'undefined') {
   root['dss'] = dss;
 }
 
-// AMD define happens at the end for compatibility with AMD
-// that don't enforce next-turn semantics on modules
-if (typeof define === 'function' && define.amd) {
-  define(function(require) {
+// AMD definition
+if (typeof define === 'function' && define.amd){
+  define(function(require){
     return dss;
   });
 }
