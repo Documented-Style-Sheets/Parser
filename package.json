@@ -21,33 +21,20 @@
       "url": "https://github.com/darcyclarke/DSS/blob/master/LICENSE-MIT"
     }
   ],
-  "main": "Gruntfile.js",
+  "main": "dss.js",
   "engines": {
     "node": ">= 0.8.0"
   },
   "scripts": {
-    "test": "grunt test"
   },
-  "dependencies": {
-    "mustache": "0.7.0",
-    "wrench": "1.4.4"
-  },
-  "devDependencies": {
-    "grunt": "~0.4.0",
-    "grunt-contrib-jshint": "~0.3.0",
-    "grunt-contrib-nodeunit": "~0.1.2",
-    "grunt-contrib-clean": "~0.4.0"
-  },
-  "peerDependencies": {
-    "grunt": "~0.4.0"
-  },
+  "dependencies": {},
+  "devDependencies": {},
+  "peerDependencies": {},
   "keywords": [
-    "gruntplugin",
     "css",
     "dss",
     "styles",
     "docs",
-    "documentation",
-    "cli"
+    "documentation"
   ]
 }
