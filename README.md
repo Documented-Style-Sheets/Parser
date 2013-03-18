@@ -1,7 +1,4 @@
-![DSS](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)
-
-DSS
-
+# DSS
 **@version 1.0**
 **@logo [DSS](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)**
 
