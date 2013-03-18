@@ -1,7 +1,7 @@
 # DSS
 **version 1.0.1**
 - **[Official Logo](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)**
-- **[NPM Repository](https://npmjs.org/package/dss)**
+- **[NPM Package](https://npmjs.org/package/dss)**
 
 **DSS**, Documented Style Sheets, is a comment styleguide and parser for CSS, LESS, STYLUS, SASS and SCSS code.
 
@@ -92,7 +92,7 @@ dss.parse(lines, options, callback);
 
 ## Modifying Parsers
 
-**DSS**, by default, includes 4 parsers for the name, description, states and markup of a comment block. You can add to or override these default parsers using the following:
+**DSS**, by default, includes 4 parsers for the **name**, **description**, **states** and **markup** of a comment block. You can add to or override these default parsers using the following:
 
 ```javascript
 // Matches @link
