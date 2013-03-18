@@ -1,10 +1,17 @@
 # DSS
-**@version 1.0**
-**@logo [DSS](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)**
+**version 1.0.1**
+- **[Official Logo](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)**
+- **[NPM Repository](https://npmjs.org/package/dss)**
 
-**DSS**, Documented Style Sheets, is a parser and style guide that creates  UI documentation objects from properly commented CSS, LESS, STYLUS, SASS and SCSS files.
+**DSS**, Documented Style Sheets, is a comment styleguide and parser for CSS, LESS, STYLUS, SASS and SCSS code.
 
-### Example Comment Block
+## Generating Documentation
+
+In most cases, you will want to include the **DSS** parser in a build step that will generate documentation files automatically. **[grunt-dss](https://github.com/darcyclarke/grunt-dss)** is the official **DSS** `grunt` task which does just that.
+
+## Parser Example
+
+#### Example Comment Block
 
 ```css
 /**
@@ -37,7 +44,18 @@
 // 
 ````
 
-### Example Generated Object
+#### Example Parser Implementation
+
+```javscript
+var lines = fs.readFileSync('styles.css'),
+    options = {},
+    callback = function(parsed){
+      console.log(parsed);
+    };
+dss.parse(lines, options, callback);
+````
+
+#### Example Generated Object
 
 ```javascript
 {
@@ -71,3 +89,20 @@
   }
 }
 ````
+
+## Modifying Parsers
+
+**DSS**, by default, includes 4 parsers for the name, description, states and markup of a comment block. You can add to or override these default parsers using the following:
+
+```javascript
+// Matches @link
+dss.parser('link', function(i, line, block){
+
+  // Replace link with HTML wrapped version
+  var exp = /(b(https?|ftp|file)://[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
+  line.replace(exp, "<a href='$1'>$1</a>");
+  return line;
+   
+});
+````
+
