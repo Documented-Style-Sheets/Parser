@@ -11,7 +11,7 @@
 module.exports = function(grunt) {
 
   grunt.initConfig({
-    DSS: {
+    dss: {
       docs: {
         options: {
           template: 'template/'
@@ -55,9 +55,9 @@ module.exports = function(grunt) {
 
   // Whenever the test task is run, cleanup the docs folder and
   // then test the result.
-  grunt.registerTask('test', ['clean', 'DSS', 'nodeunit']);
+  grunt.registerTask('test', ['clean', 'dss', 'nodeunit']);
 
   // By default run the DSS task to create docs
-  grunt.registerTask('default', ['clean', 'DSS']);
+  grunt.registerTask('default', ['clean', 'dss']);
 
 };
