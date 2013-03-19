@@ -349,65 +349,65 @@ var dss = (function(){
 
   };
 
-  // Describe detection pattern
-  _dss.detector(function(line){
-    if(typeof line !== 'string')
-      return false;
-    var reference = line.split("\n\n").pop();
-    return !!reference.match(/.*@/);
-  });
-
-  // Describe parsing a name
-  _dss.parser('name', function(i, line, block, file){
-    return line;
-  });
-
-  // Describe parsing a description
-  _dss.parser('description', function(i, line, block, file){
-    return line;
-  });
-
-  // Describe parsing a state
-  _dss.parser('state', function(i, line, block, file){
-    var state = line.split(' - ');
-    return {
-      name: (state[0]) ? _dss.trim(state[0]) : '',
-      escaped: (state[0]) ? _dss.trim(state[0].replace('.', ' ').replace(':', ' pseudo-class-')) : '',
-      description: (state[1]) ? _dss.trim(state[1]) : ''
-    };
-  });
-
-  // Describe parsing markup
-  _dss.parser('markup', function(i, line, block, file){
-    var markup = block.split('').splice(i, block.length).join('');
-
-    markup = (function(markup){
-      var ret = [];
-      markup.split('\n').forEach(function(line){
-        var pattern = '*',
-            index = line.indexOf(pattern);
-
-        if(index > 0 && index < 10)
-          line = line.split('').splice((index + pattern.length), line.length).join('');
-
-        line = dss.trim(line);
-        if(line && line != '@markup')
-          ret.push(line);
-
-      });
-      return ret.join('');
-    })(markup);
-
-    return {
-      example: markup,
-      escaped: markup.replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    };
-  });
-
   // Return function
   return _dss;
 
 })();
+
+// Describe detection pattern
+dss.detector(function(line){
+  if(typeof line !== 'string')
+    return false;
+  var reference = line.split("\n\n").pop();
+  return !!reference.match(/.*@/);
+});
+
+// Describe parsing a name
+dss.parser('name', function(i, line, block, file){
+  return line;
+});
+
+// Describe parsing a description
+dss.parser('description', function(i, line, block, file){
+  return line;
+});
+
+// Describe parsing a state
+dss.parser('state', function(i, line, block, file){
+  var state = line.split(' - ');
+  return {
+    name: (state[0]) ? _dss.trim(state[0]) : '',
+    escaped: (state[0]) ? _dss.trim(state[0].replace('.', ' ').replace(':', ' pseudo-class-')) : '',
+    description: (state[1]) ? _dss.trim(state[1]) : ''
+  };
+});
+
+// Describe parsing markup
+dss.parser('markup', function(i, line, block, file){
+  var markup = block.split('').splice(i, block.length).join('');
+
+  markup = (function(markup){
+    var ret = [];
+    markup.split('\n').forEach(function(line){
+      var pattern = '*',
+          index = line.indexOf(pattern);
+
+      if(index > 0 && index < 10)
+        line = line.split('').splice((index + pattern.length), line.length).join('');
+
+      line = dss.trim(line);
+      if(line && line != '@markup')
+        ret.push(line);
+
+    });
+    return ret.join('');
+  })(markup);
+
+  return {
+    example: markup,
+    escaped: markup.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  };
+});
 
 // Module exports
 if(typeof exports !== 'undefined'){
