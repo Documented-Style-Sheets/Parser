@@ -376,9 +376,9 @@ dss.parser('description', function(i, line, block, file){
 dss.parser('state', function(i, line, block, file){
   var state = line.split(' - ');
   return {
-    name: (state[0]) ? _dss.trim(state[0]) : '',
-    escaped: (state[0]) ? _dss.trim(state[0].replace('.', ' ').replace(':', ' pseudo-class-')) : '',
-    description: (state[1]) ? _dss.trim(state[1]) : ''
+    name: (state[0]) ? dss.trim(state[0]) : '',
+    escaped: (state[0]) ? dss.trim(state[0].replace('.', ' ').replace(':', ' pseudo-class-')) : '',
+    description: (state[1]) ? dss.trim(state[1]) : ''
   };
 });
 
