@@ -400,7 +400,7 @@ dss.parser('markup', function(i, line, block, file){
         ret.push(line);
 
     });
-    return ret.join('');
+    return ret.join('\n');
   })(markup);
 
   return {
