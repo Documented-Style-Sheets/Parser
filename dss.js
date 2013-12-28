@@ -384,7 +384,12 @@ dss.parser('state', function(i, line, block, file){
 
 // Describe parsing markup
 dss.parser('markup', function(i, line, block, file){
-  var markup = block.split('').splice(i, block.length).join('');
+
+  // find the next instance of a parser (if there is one based on the @ symbol)
+  // in order to isolate the current multi-line parser
+  var nextParserIndex = block.indexOf('* @', i+1),
+      markupLength = nextParserIndex > -1 ? nextParserIndex - i : block.length,
+      markup = block.split('').splice(i, markupLength).join('');
 
   markup = (function(markup){
     var ret = [];
