@@ -392,16 +392,21 @@ dss.parser('markup', function(i, line, block, file){
       markup = block.split('').splice(i, markupLength).join('');
 
   markup = (function(markup){
-    var ret = [];
-    markup.split('\n').forEach(function(line){
+    var ret = [],
+        lines = markup.split('\n');
+
+    lines.forEach(function(line){
       var pattern = '*',
           index = line.indexOf(pattern);
 
-      if(index > 0 && index < 10)
+      if (index > 0 && index < 10)
         line = line.split('').splice((index + pattern.length), line.length).join('');
 
-      line = dss.trim(line);
-      if(line && line != '@markup')
+      // multiline
+      if (lines.length <= 2)
+        line = dss.trim(line);
+
+      if (line && line != '@markup')
         ret.push(line);
 
     });
