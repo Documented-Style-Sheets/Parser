@@ -56,7 +56,7 @@ dss.parse(lines, options, callback);
 
 #### Example Generated Object
 
-```javascript
+```json
 {
   "name": "Button",
   "description": "Your standard form button.",
