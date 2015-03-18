@@ -32,6 +32,16 @@ var dss = (function(){
   };
 
   /*
+   * Add an alias for a parser
+   *
+   * @param (String) The name of the new variable
+   * @param (String) The name of the existing parser to use
+   */
+  _dss.alias = function(newName, oldName){
+    _dss.parsers[newName] = _dss.parsers[oldName];
+  };
+
+  /*
    * Trim whitespace from string
    *
    * @param (String) The string to be trimmed
@@ -202,7 +212,7 @@ var dss = (function(){
           variable = _dss.parsers[name],
           index = block.indexOf(line);
       line = {};
-      line[name] = (variable) ? variable.apply(null, [index, description, block, file]) : '';
+      line[name] = (variable) ? variable.apply(null, [index, description, block, file, name]) : '';
 
       if(temp[name]){
         if(!_dss.isArray(temp[name]))
@@ -383,13 +393,14 @@ dss.parser('state', function(i, line, block, file){
 });
 
 // Describe parsing markup
-dss.parser('markup', function(i, line, block, file){
+dss.parser('markup', function(i, line, block, file, parserName){
 
   // find the next instance of a parser (if there is one based on the @ symbol)
   // in order to isolate the current multi-line parser
   var nextParserIndex = block.indexOf('* @', i+1),
       markupLength = nextParserIndex > -1 ? nextParserIndex - i : block.length,
-      markup = block.split('').splice(i, markupLength).join('');
+      markup = block.split('').splice(i, markupLength).join(''),
+      parserMarker = '@' + parserName;
 
   markup = (function(markup){
     var ret = [],
@@ -406,7 +417,7 @@ dss.parser('markup', function(i, line, block, file){
       if (lines.length <= 2)
         line = dss.trim(line);
 
-      if (line && line != '@markup')
+      if (line && line != parserMarker)
         ret.push(line);
 
     });
