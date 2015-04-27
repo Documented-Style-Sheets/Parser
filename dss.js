@@ -130,7 +130,7 @@ var dss = (function(){
    * @return (String) A cleaned up text block
    */
   _dss.normalize = function(text_block){
-    
+
     // Strip out any preceding [whitespace]* that occur on every line. Not
     // the smartest, but I wonder if I care.
     text_block = text_block.replace(/^(\s*\*+)/, '');
@@ -336,14 +336,14 @@ var dss = (function(){
         if(_dss.detect(line))
           temp = parser(temp, _dss.normalize(line), block, lines);
       });
-      
+
       // Push to blocks if object isn't empty
       if(_dss.size(temp))
         blocks.push(temp);
       temp = {};
 
-    }); 
-            
+    });
+
     // Execute callback with filename and blocks
     callback({ blocks: blocks });
 
@@ -406,7 +406,7 @@ dss.parser('markup', function(i, line, block, file){
       if (lines.length <= 2)
         line = dss.trim(line);
 
-      if (line && line != '@markup')
+      if (line && line.indexOf('@markup') == -1)
         ret.push(line);
 
     });
