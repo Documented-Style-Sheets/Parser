@@ -1,8 +1,8 @@
 # DSS
-- **[Official Logo](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)**
-- **[NPM Package](https://npmjs.org/package/dss)**
+**DSS**, Documented Style Sheets, is a comment styleguide and parser for CSS, LESS, STYLUS, SASS and SCSS code.  
 
-**DSS**, Documented Style Sheets, is a comment styleguide and parser for CSS, LESS, STYLUS, SASS and SCSS code.
+[![NPM](https://nodei.co/npm/dss.png?downloadRank=true)](https://npmjs.org/package/dss)  
+![](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)
 
 ## Generating Documentation
 
