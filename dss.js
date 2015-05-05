@@ -1,11 +1,11 @@
 // DSS Object
-var dss = (function(){
+var dss = ( function () {
 
   // Store reference
-  var _dss = function(){};
+  var _dss = function (){};
 
   // Default detect function
-  _dss.detect = function(){
+  _dss.detect = function () {
     return true;
   };
 
@@ -14,8 +14,10 @@ var dss = (function(){
    *
    * @param (Function) The callback to be used to detect variables
    */
-  _dss.detector = function(callback){
+  _dss.detector = function ( callback ) {
+
     _dss.detect = callback;
+
   };
 
   // Store parsers
@@ -27,8 +29,8 @@ var dss = (function(){
    * @param (String) The name of the variable
    * @param (Function) The callback to be executed at parse time
    */
-  _dss.parser = function(name, callback){
-    _dss.parsers[name] = callback;
+  _dss.parser = function ( name, callback ) {
+    _dss.parsers[ name ] = callback;
   };
 
   /*
@@ -47,11 +49,11 @@ var dss = (function(){
    * @param (String) The string to be trimmed
    * @return (String) The trimmed string
    */
-  _dss.trim = function(str, arr){
+  _dss.trim = function ( str, arr ) {
     var defaults = [ /^\s\s*/, /\s\s*$/ ];
-    arr = (_dss.isArray(arr)) ? arr.concat(defaults) : defaults;
-    arr.forEach(function(regEx){
-      str = str.replace(regEx, '');
+    arr = ( _dss.isArray( arr ) ) ? arr.concat( defaults ) : defaults;
+    arr.forEach( function( regEx ) {
+      str = str.replace( regEx, '' );
     });
     return str;
   };
@@ -62,8 +64,8 @@ var dss = (function(){
    * @param (Object) The object to check
    * @return (Boolean) The result of the test
    */
-  _dss.isArray = function(obj){
-    return toString.call(obj) == '[object Array]';
+  _dss.isArray = function ( obj ) {
+    return toString.call( obj ) == '[object Array]';
   };
 
   /*
