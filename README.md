@@ -47,7 +47,7 @@ In most cases, you will want to include the **DSS** parser in a build step that 
 
 #### Example Parser Implementation
 
-```javscript
+```javascript
 // Require/read a file
 var fs = require( 'fs' );
 var file = fs.readFileSync( 'styles.css' );
