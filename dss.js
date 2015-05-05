@@ -2,7 +2,7 @@
 var dss = ( function () {
 
   // Store reference
-  var _dss = function (){};
+  var _dss = function () {};
 
   // Default detect function
   _dss.detect = function () {
@@ -15,9 +15,7 @@ var dss = ( function () {
    * @param (Function) The callback to be used to detect variables
    */
   _dss.detector = function ( callback ) {
-
     _dss.detect = callback;
-
   };
 
   // Store parsers
@@ -39,8 +37,8 @@ var dss = ( function () {
    * @param (String) The name of the new variable
    * @param (String) The name of the existing parser to use
    */
-  _dss.alias = function(newName, oldName){
-    _dss.parsers[newName] = _dss.parsers[oldName];
+  _dss.alias = function ( newName, oldName ) {
+    _dss.parsers[ newName ] = _dss.parsers[ oldName ];
   };
 
   /*
@@ -54,7 +52,7 @@ var dss = ( function () {
     arr = ( _dss.isArray( arr ) ) ? arr.concat( defaults ) : defaults;
     arr.forEach( function( regEx ) {
       str = str.replace( regEx, '' );
-    });
+    } );
     return str;
   };
 
@@ -74,10 +72,10 @@ var dss = ( function () {
    * @param (Object) The object to check
    * @return (Boolean) The result of the test
    */
-  _dss.size = function(obj){
+  _dss.size = function ( obj ) {
     var size = 0;
-    for(var key in obj){
-      if(Object.prototype.hasOwnProperty.call(obj, key))
+    for ( var key in obj ) {
+      if ( Object.prototype.hasOwnProperty.call( obj, key ) )
         size++;
     }
     return size;
@@ -90,16 +88,22 @@ var dss = ( function () {
    * @param (Function) Callback function to use when iterating
    * @param (Object) Optional context to pass to iterator
    */
-  _dss.each = function(obj, iterator, context){
-    if(obj == null) return;
-    if(obj.length === +obj.length){
-      for(var i = 0, l = obj.length; i < l; i++){
-        if(iterator.call(context, obj[i], i, obj) === {}) return;
+  _dss.each = function ( obj, iterator, context ) {
+    if ( obj == null ) {
+      return;
+    }
+    if ( obj.length === +obj.length ) {
+      for ( var i = 0, l = obj.length; i < l; i++ ) {
+        if ( iterator.call( context, obj[ i ], i, obj ) === {} ) {
+          return;
+        }
       }
     } else {
-      for(var key in obj){
-        if(_.has(obj, key)){
-          if(iterator.call(context, obj[key], key, obj) === {}) return;
+      for ( var key in obj ) {
+        if ( _.has( obj, key ) ) {
+          if ( iterator.call( context, obj[ key ], key, obj ) === {} ) {
+            return;
+          }
         }
       }
     }
@@ -110,11 +114,11 @@ var dss = ( function () {
    *
    * @param (Object) The object to extend
    */
-  _dss.extend = function(obj){
-    _dss.each(Array.prototype.slice.call(arguments, 1), function(source){
-      if(source){
-        for(var prop in source){
-          obj[prop] = source[prop];
+  _dss.extend = function ( obj ) {
+    _dss.each( Array.prototype.slice.call( arguments, 1 ), function ( source ) {
+      if ( source ) {
+        for ( var prop in source ) {
+          obj[ prop ] = source[ prop ];
         }
       }
     });
@@ -128,8 +132,8 @@ var dss = ( function () {
    * @param (String) The string to be matched
    * @return (String) The modified string
    */
-  _dss.squeeze = function(str, def){
-    return str.replace(/\s{2,}/g, def);
+  _dss.squeeze = function ( str, def ) {
+    return str.replace( /\s{2,}/g, def );
   };
 
   /*
@@ -141,30 +145,31 @@ var dss = ( function () {
    * @param (String) Text block
    * @return (String) A cleaned up text block
    */
-  _dss.normalize = function(text_block){
+  _dss.normalize = function ( text_block ) {
 
     // Strip out any preceding [whitespace]* that occur on every line. Not
     // the smartest, but I wonder if I care.
-    text_block = text_block.replace(/^(\s*\*+)/, '');
+    text_block = text_block.replace( /^(\s*\*+)/, '' );
 
     // Strip consistent indenting by measuring first line's whitespace
     var indent_size = false;
-    var unindented = (function(lines){
-      return lines.map(function(line){
-        var preceding_whitespace = line.match(/^\s*/)[0].length;
-        if(!indent_size)
+    var unindented = ( function ( lines ) {
+      return lines.map( function ( line ) {
+        var preceding_whitespace = line.match( /^\s*/ )[ 0 ].length;
+        if ( !indent_size ) {
           indent_size = preceding_whitespace;
-        if(line == ''){
+        }
+        if ( line == '' ) {
           return '';
-        } else if(indent_size <= preceding_whitespace && indent_size > 0){
-          return line.slice(indent_size, (line.length - 1));
+        } else if ( indent_size <= preceding_whitespace && indent_size > 0 ) {
+          return line.slice( indent_size, ( line.length - 1 ) );
         } else {
           return line;
         }
-      }).join("\n");
-    })(text_block.split("\n"));
+      } ).join( "\n" );
+    } )( text_block.split( "\n" ) );
 
-    return _dss.trim(text_block);
+    return _dss.trim( text_block );
 
   };
 
@@ -174,26 +179,26 @@ var dss = ( function () {
    * @param (Object) options
    * @param (Function) callback
    */
-  _dss.parse = function(lines, options, callback){
+  _dss.parse = function ( lines, options, callback ) {
 
     // Options
-    options = (options) ? options : {};
-    options.preserve_whitespace = !!(options.preserve_whitespace);
+    options = ( options ) ? options : {};
+    options.preserve_whitespace = !!( options.preserve_whitespace );
 
     // Setup
-    var _this = this,
-        current_block = '',
-        inside_single_line_block = false,
-        inside_multi_line_block = false,
-        last_line = '',
-        start = "{start}",
-        end = "{/end}",
-        _parsed = false,
-        _blocks = [],
-        parsed = '',
-        blocks = [],
-        temp = {},
-        lineNum = 0;
+    var _this = this;
+    var current_block = '';
+    var inside_single_line_block = false;
+    var inside_multi_line_block = false;
+    var last_line = '';
+    var start = "{start}";
+    var end = "{/end}";
+    var _parsed = false;
+    var _blocks = [];
+    var parsed = '';
+    var blocks = [];
+    var temp = {};
+    var lineNum = 0;
 
     /*
      * Parses line
@@ -203,25 +208,25 @@ var dss = ( function () {
      * @param (String) line to parse/check
      * @return (Boolean) result of parsing
      */
-    var parser = function(temp, line, block, file){
-      var indexer = function(str, find){
-            return (str.indexOf(find) > 0) ? str.indexOf(find) : false;
-          },
-          parts = line.replace(/.*@/, ''),
-          i = indexer(parts, ' ') || indexer(parts, '\n') || indexer(parts, '\r') || parts.length,
-          name = _dss.trim(parts.substr(0, i)),
-          description = _dss.trim(parts.substr(i)),
-          variable = _dss.parsers[name],
-          index = block.indexOf(line);
+    var parser = function ( temp, line, block, file ) {
+      var indexer = function ( str, find ) {
+        return ( str.indexOf( find ) > 0 ) ? str.indexOf( find ) : false;
+      };
+      var parts = line.replace( /.*@/, '' );
+      var i = indexer( parts, ' ' ) || indexer( parts, '\n' ) || indexer( parts, '\r' ) || parts.length;
+      var name = _dss.trim( parts.substr( 0, i ) );
+      var description = _dss.trim( parts.substr( i ) );
+      var variable = _dss.parsers[ name ];
+      var index = block.indexOf( line );
       line = {};
-      line[name] = (variable) ? variable.apply(null, [index, description, block, file, name]) : '';
-
-      if(temp[name]){
-        if(!_dss.isArray(temp[name]))
-          temp[name] = [ temp[name] ];
-        temp[name].push(line[name]);
+      line[ name ] = ( variable ) ? variable.apply( null, [ index, description, block, file, name ] ) : '';
+      if ( temp[ name ] ) {
+        if ( !_dss.isArray( temp[ name ] ) ) {
+          temp[name] = [ temp[ name ] ];
+        }
+        temp[ name ].push( line[ name ] );
       } else {
-        temp = _dss.extend(temp, line);
+        temp = _dss.extend( temp, line );
       }
       return temp;
     };
@@ -229,8 +234,8 @@ var dss = ( function () {
     /*
      * Comment block
      */
-    var block = function(){
-      this._raw = (comment_text) ? comment_text : '';
+    var block = function () {
+      this._raw = ( comment_text ) ? comment_text : '';
       this._filename = filename;
     };
 
@@ -240,8 +245,8 @@ var dss = ( function () {
      * @param (String) line to parse/check
      * @return (Boolean) result of check
      */
-    var single_line_comment = function(line){
-      return !!line.match(/^\s*\/\//);
+    var single_line_comment = function ( line ) {
+      return !!line.match( /^\s*\/\// );
     };
 
     /*
@@ -250,8 +255,8 @@ var dss = ( function () {
      * @param (String) line to parse/check
      * @return (Boolean) result of check
      */
-    var start_multi_line_comment = function(line){
-      return !!line.match(/^\s*\/\*/);
+    var start_multi_line_comment = function ( line ) {
+      return !!line.match( /^\s*\/\*/ );
     };
 
     /*
@@ -260,10 +265,11 @@ var dss = ( function () {
      * @parse (String) line to parse/check
      * @return (Boolean) result of check
      */
-    var end_multi_line_comment = function(line){
-      if(single_line_comment(line))
+    var end_multi_line_comment = function ( line ) {
+      if( single_line_comment( line ) ) {
         return false;
-      return !!line.match(/.*\*\//);
+      }
+      return !!line.match( /.*\*\// );
     };
 
     /*
@@ -272,8 +278,8 @@ var dss = ( function () {
      * @param (String) line to parse/check
      * @return (Boolean) result of check
      */
-    var parse_single_line = function(line){
-      return line.replace(/\s*\/\//, '');
+    var parse_single_line = function ( line ) {
+      return line.replace( /\s*\/\//, '' );
     };
 
     /*
@@ -282,21 +288,21 @@ var dss = ( function () {
      * @param (String) line to parse/check
      * @return (Boolean) result of check
      */
-    var parse_multi_line = function(line){
-      var cleaned = line.replace(/\s*\/\*/, '');
-      return cleaned.replace(/\*\//, '');
+    var parse_multi_line = function ( line ) {
+      var cleaned = line.replace( /\s*\/\*/, '' );
+      return cleaned.replace( /\*\//, '' );
     };
 
     lines = lines + '';
-    lines.split(/\n/).forEach(function(line){
+    lines.split( /\n/ ).forEach( function ( line ) {
 
       lineNum = lineNum + 1;
       line = line + '';
 
       // Parse Single line comment
-      if(single_line_comment(line)){
-        parsed = parse_single_line(line);
-        if(inside_single_line_block){
+      if ( single_line_comment( line ) ) {
+        parsed = parse_single_line( line );
+        if ( inside_single_line_block ) {
           current_block += '\n' + parsed;
         } else {
           current_block = parsed;
@@ -305,9 +311,9 @@ var dss = ( function () {
       }
 
       // Parse multi-line comments
-      if(start_multi_line_comment(line) || inside_multi_line_block){
-        parsed = parse_multi_line(line);
-        if(inside_multi_line_block){
+      if ( start_multi_line_comment( line ) || inside_multi_line_block ) {
+        parsed = parse_multi_line( line );
+        if ( inside_multi_line_block ) {
           current_block += '\n' + parsed;
         } else {
           current_block += parsed;
@@ -316,14 +322,14 @@ var dss = ( function () {
       }
 
       // End a multi-line block
-      if(end_multi_line_comment(line)){
+      if ( end_multi_line_comment( line ) ) {
         inside_multi_line_block = false;
       }
 
       // Store current block if done
-      if(!single_line_comment(line) && !inside_multi_line_block){
-        if(current_block){
-          _blocks.push(_dss.normalize(current_block));
+      if ( !single_line_comment( line ) && !inside_multi_line_block ) {
+        if ( current_block ) {
+          _blocks.push( _dss.normalize( current_block ) );
         }
         inside_single_line_block = false;
         current_block = '';
@@ -336,28 +342,30 @@ var dss = ( function () {
     _parsed = true;
 
     // Create new blocks with custom parsing
-    _blocks.forEach(function(block){
+    _blocks.forEach( function ( block ) {
 
       // Remove extra whitespace
-      block = block.split('\n').filter(function(line){
-        return (_dss.trim(_dss.normalize(line)));
-      }).join('\n');
+      block = block.split( '\n' ).filter( function ( line ) {
+        return ( _dss.trim( _dss.normalize( line ) ) );
+      } ).join( '\n' );
 
       // Split block into lines
-      block.split('\n').forEach(function(line){
-        if(_dss.detect(line))
-          temp = parser(temp, _dss.normalize(line), block, lines);
+      block.split( '\n' ).forEach( function ( line ) {
+        if ( _dss.detect( line ) ) {
+          temp = parser( temp, _dss.normalize( line ), block, lines );
+        }
       });
 
       // Push to blocks if object isn't empty
-      if(_dss.size(temp))
-        blocks.push(temp);
+      if( _dss.size( temp ) ) {
+        blocks.push( temp );
+      }
       temp = {};
 
     });
 
     // Execute callback with filename and blocks
-    callback({ blocks: blocks });
+    callback( { blocks: blocks } );
 
   };
 
@@ -367,84 +375,91 @@ var dss = ( function () {
 })();
 
 // Describe detection pattern
-dss.detector(function(line){
-  if(typeof line !== 'string')
+dss.detector( function( line ) {
+  if( typeof line !== 'string' ) {
     return false;
-  var reference = line.split("\n\n").pop();
-  return !!reference.match(/.*@/);
+  }
+  var reference = line.split( "\n\n" ).pop();
+  return !!reference.match( /.*@/ );
 });
 
 // Describe parsing a name
-dss.parser('name', function(i, line, block, file){
+dss.parser( 'name', function ( i, line, block, file ) {
   return line;
 });
 
 // Describe parsing a description
-dss.parser('description', function(i, line, block, file){
+dss.parser( 'description', function ( i, line, block, file ) {
   return line;
 });
 
 // Describe parsing a state
-dss.parser('state', function(i, line, block, file){
-  var state = line.split(' - ');
+dss.parser( 'state', function ( i, line, block, file ) {
+  var state = line.split( ' - ' );
   return {
-    name: (state[0]) ? dss.trim(state[0]) : '',
-    escaped: (state[0]) ? dss.trim(state[0].replace('.', ' ').replace(':', ' pseudo-class-')) : '',
-    description: (state[1]) ? dss.trim(state[1]) : ''
+    name: ( state[ 0 ] ) ? dss.trim( state[ 0 ] ) : '',
+    escaped: ( state[ 0 ] ) ? dss.trim( state[ 0 ].replace( '.', ' ' ).replace( ':', ' pseudo-class-' ) ) : '',
+    description: ( state[ 1 ] ) ? dss.trim( state[ 1 ] ) : ''
   };
 });
 
 // Describe parsing markup
-dss.parser('markup', function(i, line, block, file, parserName){
+dss.parser( 'markup', function ( i, line, block, file, parserName ) {
 
   // find the next instance of a parser (if there is one based on the @ symbol)
   // in order to isolate the current multi-line parser
-  var nextParserIndex = block.indexOf('* @', i+1),
-      markupLength = nextParserIndex > -1 ? nextParserIndex - i : block.length,
-      markup = block.split('').splice(i, markupLength).join(''),
-      parserMarker = '@' + parserName;
+  var nextParserIndex = block.indexOf( '* @', i + 1 );
+  var markupLength = ( nextParserIndex > -1 ) ? nextParserIndex - i : block.length;
+  var markup = block.split( '' ).splice( i, markupLength ).join( '' );
+  var parserMarker = '@' + parserName;
 
-  markup = (function(markup){
-    var ret = [],
-        lines = markup.split('\n');
+  markup = ( function( markup ) {
+    var ret = [];
+    var lines = markup.split( '\n' );
 
-    lines.forEach(function(line){
-      var pattern = '*',
-          index = line.indexOf(pattern);
+    lines.forEach( function( line ) {
+      var pattern = '*';
+      var index = line.indexOf( pattern );
 
-      if (index > 0 && index < 10)
-        line = line.split('').splice((index + pattern.length), line.length).join('');
+      if ( index > 0 && index < 10 ) {
+        line = line.split( '' ).splice( ( index + pattern.length ), line.length ).join( '' );
+      }
 
       // multiline
-      if (lines.length <= 2)
-        line = dss.trim(line);
+      if ( lines.length <= 2 ) {
+        line = dss.trim( line );
+      }
 
-      if (line && line.indexOf( parserMarker ) == -1)
-        ret.push(line);
+      if ( line && line.indexOf( parserMarker ) == -1 ) {
+        ret.push( line );
+      }
 
     });
-    return ret.join('\n');
-  })(markup);
+
+    return ret.join( '\n' );
+
+  })( markup );
 
   return {
     example: markup,
-    escaped: markup.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    escaped: markup.replace( /</g, '&lt;' ).replace( />/g, '&gt;' )
   };
+
 });
 
 // Module exports
-if(typeof exports !== 'undefined'){
-  if(typeof module !== 'undefined' && module.exports){
+if( typeof exports !== 'undefined' ) {
+  if ( typeof module !== 'undefined' && module.exports ) {
     exports = module.exports = dss;
   }
   exports.dss = dss;
 } else {
-  root['dss'] = dss;
+  root[ 'dss' ] = dss;
 }
 
 // AMD definition
-if (typeof define === 'function' && define.amd){
-  define(function(require){
+if ( typeof define === 'function' && define.amd ) {
+  define( function ( require ) {
     return dss;
   });
 }
