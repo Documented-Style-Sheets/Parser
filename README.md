@@ -1,4 +1,4 @@
-# DSS
+![DSS](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)
 - **[Official Logo](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)**
 - **[NPM Package](https://npmjs.org/package/dss)**
 
