@@ -224,7 +224,11 @@ var dss = ( function () {
         if ( !_dss.isArray( temp[ name ] ) ) {
           temp[name] = [ temp[ name ] ];
         }
-        temp[ name ].push( line[ name ] );
+        if ( !_dss.isArray( line[ name ] ) ) {
+          temp[ name ].push( line[ name ] );
+        } else {
+          temp[ name ].push( line[ name ][ 0 ] );
+        }
       } else {
         temp = _dss.extend( temp, line );
       }
@@ -396,11 +400,11 @@ dss.parser( 'description', function ( i, line, block, file ) {
 // Describe parsing a state
 dss.parser( 'state', function ( i, line, block, file ) {
   var state = line.split( ' - ' );
-  return {
+  return [{
     name: ( state[ 0 ] ) ? dss.trim( state[ 0 ] ) : '',
     escaped: ( state[ 0 ] ) ? dss.trim( state[ 0 ].replace( '.', ' ' ).replace( ':', ' pseudo-class-' ) ) : '',
     description: ( state[ 1 ] ) ? dss.trim( state[ 1 ] ) : ''
-  };
+  }];
 });
 
 // Describe parsing markup
