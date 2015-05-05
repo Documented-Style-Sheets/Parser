@@ -1,5 +1,5 @@
-![DSS](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)
-- **[Official Logo](http://f.cl.ly/items/1J353X3U172A1u3r2K3b/dss-logo.png)**
+![DSS](http://cl.ly/image/2p0C122U0N32/logo.png)
+- **[Official Logo](http://cl.ly/image/2p0C122U0N32/logo.png)**
 - **[NPM Package](https://npmjs.org/package/dss)**
 
 [![NPM](https://nodei.co/npm/dss.png?downloadRank=true)](https://npmjs.org/package/dss)  
@@ -48,12 +48,15 @@ In most cases, you will want to include the **DSS** parser in a build step that 
 #### Example Parser Implementation
 
 ```javscript
-var lines = fs.readFileSync('styles.css'),
-    options = {},
-    callback = function(parsed){
-      console.log(parsed);
-    };
-dss.parse(lines, options, callback);
+// Require/read a file
+var fs = require( 'fs' );
+var file = fs.readFileSync( 'styles.css' );
+
+// Run DSS Parser
+dss.parse( file, {}, function ( parsed ) {
+  console.log( parsed );
+});
+
 ````
 
 #### Example Generated Object
