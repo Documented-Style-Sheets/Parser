@@ -4,29 +4,21 @@
 
 [![NPM](https://nodei.co/npm/dss.png?downloadRank=true)](https://npmjs.org/package/dss)  
 
-**DSS**, Documented Style Sheets, is a comment guide and parser for CSS, LESS, STYLUS, SASS and SCSS code. This project does static file analysis and parsing to generate a documentation object to be used for generating styleguides.
+**DSS**, Documented Style Sheets is a comment guide and parser for CSS, LESS, STYLUS, SASS and SCSS code. This project does static file analysis and parsing to generate an object to be used for generating styleguides.
 
 
 ##### Table of Contents
 
-- [Other Projects](#other-projects)
 - [Parsing a File](#parsing-a-file)
-  - [**Examples**](#examples)
-  - [`dss.detector`](#dss-detector)
-  - [`dss.parser`](#dss-parser)
-
-### Other Projects
-- [Grunt Plugin](http://github.com/dsswg/grunt-dss)
-- [Gulp Plugin](http://github.com/dsswg/gulp-dss)
-- [Sublime Text Plugin](https://github.com/sc8696/sublime-css-auto-comments)
-- [UX Recorder](http://github.com/dsswg/dss-recorder)
-- [UX Player](http://github.com/dsswg/dss-player)
+  - [`dss.detector`](#dssdetector-callback-)
+  - [`dss.parser`](#dssparser-name-callback-)
+- [Other Projects](#other-projects)
 
 ### Parsing a File
 
 In most cases, you will want to include the **DSS** parser in a build step that will generate documentation files automatically (or you just want to play around with this returned `Object` for other means); Either way, we officially support a [Grunt Plugin](https://github.com/dsswg/grunt-dss) and a [Gulp Plugin](http://github.com/dsswg/gulp-dss).
 
-#### Examples
+### Examples
 
 ##### Example Comment Block Format
 
@@ -163,3 +155,10 @@ dss.parser( 'link', function () {
    
 });
 ````
+
+### Other Projects
+- [Grunt Plugin](http://github.com/dsswg/grunt-dss)
+- [Gulp Plugin](http://github.com/dsswg/gulp-dss)
+- [Sublime Text Plugin](https://github.com/sc8696/sublime-css-auto-comments)
+- [UX Recorder](http://github.com/dsswg/dss-recorder)
+- [UX Player](http://github.com/dsswg/dss-player)
