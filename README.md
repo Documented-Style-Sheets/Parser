@@ -4,31 +4,32 @@
 
 [![NPM](https://nodei.co/npm/dss.png?downloadRank=true)](https://npmjs.org/package/dss)  
 
-**DSS**, Documented Style Sheets, is a comment styleguide and parser for CSS, LESS, STYLUS, SASS and SCSS code.
+**DSS**, Documented Style Sheets, is a comment guide and parser for CSS, LESS, STYLUS, SASS and SCSS code. This project does static file analysis and parsing to generate a documentation object to be used for generating styleguides.
 
-## Generating Documentation
 
-In most cases, you will want to include the **DSS** parser in a build step that will generate documentation files automatically. **[grunt-dss](https://github.com/darcyclarke/grunt-dss)** is the official **DSS** `grunt` task which does just that.
+##### Table of Contents
 
-## Parser Example
+- [Other Projects](#other-projects)
+- [Parsing a File](#parsing-a-file)
+  - [**Examples**](#examples)
+  - [`dss.detector`](#dss-detector)
+  - [`dss.parser`](#dss-parser)
 
-#### Example Comment Block
+### Other Projects
+- [Grunt Plugin](http://github.com/dsswg/grunt-dss)
+- [Gulp Plugin](http://github.com/dsswg/gulp-dss)
+- [Sublime Text Plugin](https://github.com/sc8696/sublime-css-auto-comments)
+- [UX Recorder](http://github.com/dsswg/dss-recorder)
+- [UX Player](http://github.com/dsswg/dss-player)
 
-```css
-/**
-  * @name Button
-  * @description Your standard form button.
-  * 
-  * @state :hover - Highlights when hovering.
-  * @state :disabled - Dims the button when disabled.
-  * @state .primary - Indicates button is the primary action.
-  * @state .smaller - A smaller button
-  * 
-  * @markup
-  *   <button>This is a button</button>
-  */ 
-````
-#### or
+### Parsing a File
+
+In most cases, you will want to include the **DSS** parser in a build step that will generate documentation files automatically (or you just want to play around with this returned `Object` for other means); Either way, we officially support a [Grunt Plugin](https://github.com/dsswg/grunt-dss) and a [Gulp Plugin](http://github.com/dsswg/gulp-dss).
+
+#### Examples
+
+##### Example Comment Block Format
+
 
 ```scss
 //
@@ -45,21 +46,27 @@ In most cases, you will want to include the **DSS** parser in a build step that 
 // 
 ````
 
-#### Example Parser Implementation
+##### Example Usage
 
 ```javascript
-// Require/read a file
+// Requirements
 var fs = require( 'fs' );
-var file = fs.readFileSync( 'styles.css' );
+var dss = require( 'dss' );
 
-// Run DSS Parser
-dss.parse( file, {}, function ( parsed ) {
-  console.log( parsed );
+// Get file contents
+var fileContents = fs.readFileSync( 'styles.css' );
+
+// Run the DSS Parser on the file contents
+dss.parse( fileContents, {}, function ( parsedObject ) {
+
+  // Output the parsed document
+  console.log( parsedObject );
+
 });
 
 ````
 
-#### Example Generated Object
+##### Example Output
 
 ```json
 {
@@ -93,25 +100,66 @@ dss.parse( file, {}, function ( parsed ) {
   }
 }
 ````
+#### dss.detector( callback )
 
-## Modifying Parsers
+This method defines the way in which points of interest (ie. variables) are found in lines of text and then, later, parsed. **DSS** dogfoods this API and the default implementation is shown below.
 
-**DSS**, by default, includes 4 parsers for the **name**, **description**, **states** and **markup** of a comment block. You can add to or override these default parsers using the following:
+###### Default Detector:
 
 ```javascript
-// Matches @link
-dss.parser('link', function(i, line, block){
+// Describe default detection pattern
+// Note: the current line, as a string, is passed to this function
+dss.detector( function( line ) {
+  
+  if ( typeof line !== 'string' ) {
+    return false;
+  }
+  var reference = line.split( "\n\n" ).pop();
+  return !!reference.match( /.*@/ );
+
+});
+````
+
+#### dss.parser( name, callback )
+
+**DSS**, by default, includes 4 parsers for the `name`, `description`, `state` and `markup` of a comment block. You can add to, or override, these defaults by registering a new parser. These defaults also follow a pattern which uses the `@` decorator to identify them. You can modify this behaivour providing a different callback function to `dss.detector()`.
+
+`dss.parser` expects the name of the variable you're looking for and a callback function to manipulate the contents. Whatever is returned by that callback function is what is used in generate JSON.
+
+##### Callback `this`:
+
+- `this.file`: The current file
+- `this.name`: The name of the parser
+- `this.options`: The options that were passed to `dss.parse()` initially
+- `this.line`:
+  - `this.line.contents`: The content associated with this variable
+  - `this.line.from`: The line number where this variable was found
+  - `this.line.to`: The line number where this variable's contents ended
+- `this.block`:
+  - `this.block.contents`: The content associated with this variable's comment block
+  - `this.block.from`: The line number where this variable's comment block starts
+  - `this.block.to`: The line number where this variable's comment block ends
+  
+    
+##### Custom Parser Examples:
+
+```javascript
+// Matches @version
+dss.parser( 'version', function () {
+
+  // Just returns the lines contents
+  return this.line.contents;
+
+});
+````
+
+```javascript
+dss.parser( 'link', function () {
 
   // Replace link with HTML wrapped version
   var exp = /(b(https?|ftp|file)://[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
-  line.replace(exp, "<a href='$1'>$1</a>");
+  this.line.contents.replace(exp, "<a href='$1'>$1</a>");
   return line;
    
 });
 ````
-
-## DSS Sublime Text Plugin
-
-You can now **auto-complete** DSS-style comment blocks using @sc8696's [Auto-Comments Sublime Text Plugin](https://github.com/sc8696/sublime-css-auto-comments)
-
-
