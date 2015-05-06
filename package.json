@@ -25,9 +25,11 @@
   "engines": {
     "node": ">= 0.8.0"
   },
-  "scripts": {
+  "scripts": {},
+  "dependencies": {
+    "jade": "^1.9.2",
+    "marked": "^0.3.3"
   },
-  "dependencies": {},
   "devDependencies": {},
   "peerDependencies": {},
   "keywords": [

@@ -4,6 +4,9 @@ var dss = ( function () {
   // Store reference
   var _dss = function () {};
 
+  // Store parsers
+  _dss.parsers = {};
+
   // Default detect function
   _dss.detect = function () {
     return true;
@@ -17,9 +20,6 @@ var dss = ( function () {
   _dss.detector = function ( callback ) {
     _dss.detect = callback;
   };
-
-  // Store parsers
-  _dss.parsers = {};
 
   /*
    * Add a parser for a specific variable
@@ -147,8 +147,7 @@ var dss = ( function () {
    */
   _dss.normalize = function ( text_block ) {
 
-    // Strip out any preceding [whitespace]* that occur on every line. Not
-    // the smartest, but I wonder if I care.
+    // Strip out any preceding [whitespace]* that occurs on every line
     text_block = text_block.replace( /^(\s*\*+)/, '' );
 
     // Strip consistent indenting by measuring first line's whitespace
@@ -186,122 +185,32 @@ var dss = ( function () {
     options.preserve_whitespace = !!( options.preserve_whitespace );
 
     // Setup
-    var _this = this;
-    var current_block = '';
-    var inside_single_line_block = false;
-    var inside_multi_line_block = false;
-    var last_line = '';
-    var start = "{start}";
-    var end = "{/end}";
-    var _parsed = false;
-    var _blocks = [];
-    var parsed = '';
-    var blocks = [];
-    var temp = {};
-    var lineNum = 0;
-
-    /*
-     * Parses line
-     *
-     * @param (Num) the line number
-     * @param (Num) number of lines
-     * @param (String) line to parse/check
-     * @return (Boolean) result of parsing
-     */
-    var parser = function ( temp, line, block, file ) {
-      var indexer = function ( str, find ) {
-        return ( str.indexOf( find ) > 0 ) ? str.indexOf( find ) : false;
-      };
-      var parts = line.replace( /.*@/, '' );
-      var i = indexer( parts, ' ' ) || indexer( parts, '\n' ) || indexer( parts, '\r' ) || parts.length;
-      var name = _dss.trim( parts.substr( 0, i ) );
-      var description = _dss.trim( parts.substr( i ) );
-      var variable = _dss.parsers[ name ];
-      var index = block.indexOf( line );
-      line = {};
-      line[ name ] = ( variable ) ? variable.apply( null, [ index, description, block, file, name ] ) : '';
-      if ( temp[ name ] ) {
-        if ( !_dss.isArray( temp[ name ] ) ) {
-          temp[name] = [ temp[ name ] ];
-        }
-        if ( !_dss.isArray( line[ name ] ) ) {
-          temp[ name ].push( line[ name ] );
-        } else {
-          temp[ name ].push( line[ name ][ 0 ] );
-        }
-      } else {
-        temp = _dss.extend( temp, line );
-      }
-      return temp;
-    };
-
-    /*
-     * Comment block
-     */
-    var block = function () {
-      this._raw = ( comment_text ) ? comment_text : '';
-      this._filename = filename;
-    };
-
-    /*
-     * Check for single-line comment
-     *
-     * @param (String) line to parse/check
-     * @return (Boolean) result of check
-     */
-    var single_line_comment = function ( line ) {
-      return !!line.match( /^\s*\/\// );
-    };
-
-    /*
-     * Checks for start of a multi-line comment
-     *
-     * @param (String) line to parse/check
-     * @return (Boolean) result of check
-     */
-    var start_multi_line_comment = function ( line ) {
-      return !!line.match( /^\s*\/\*/ );
-    };
-
-    /*
-     * Check for end of a multi-line comment
-     *
-     * @parse (String) line to parse/check
-     * @return (Boolean) result of check
-     */
-    var end_multi_line_comment = function ( line ) {
-      if( single_line_comment( line ) ) {
-        return false;
-      }
-      return !!line.match( /.*\*\// );
-    };
-
-    /*
-     * Removes comment identifiers for single-line comments.
-     *
-     * @param (String) line to parse/check
-     * @return (Boolean) result of check
-     */
-    var parse_single_line = function ( line ) {
-      return line.replace( /\s*\/\//, '' );
-    };
-
-    /*
-     * Remove comment identifiers for multi-line comments.
-     *
-     * @param (String) line to parse/check
-     * @return (Boolean) result of check
-     */
-    var parse_multi_line = function ( line ) {
-      var cleaned = line.replace( /\s*\/\*/, '' );
-      return cleaned.replace( /\*\//, '' );
-    };
+    var current_block             = '';
+    var inside_single_line_block  = false;
+    var inside_multi_line_block   = false;
+    var last_line                 = '';
+    var start                     = '{start}';
+    var end                       = '{/end}';
+    var _parsed                   = false;
+    var _blocks                   = [];
+    var parsed                    = '';
+    var blocks                    = [];
+    var temp                      = {};
+    var lineNum                   = 0;
+    var from                      = 0;
+    var to                        = 0;
 
     lines = lines + '';
     lines.split( /\n/ ).forEach( function ( line ) {
 
+      // Iterate line number and ensure line is treaty as a string
       lineNum = lineNum + 1;
       line = line + '';
+
+      // Store starting line number
+      if ( single_line_comment( line ) || start_multi_line_comment( line ) ) {
+        from = lineNum;
+      }
 
       // Parse Single line comment
       if ( single_line_comment( line ) ) {
@@ -333,7 +242,7 @@ var dss = ( function () {
       // Store current block if done
       if ( !single_line_comment( line ) && !inside_multi_line_block ) {
         if ( current_block ) {
-          _blocks.push( _dss.normalize( current_block ) );
+          _blocks.push( { text: _dss.normalize( current_block ), from: from, to: lineNum } );
         }
         inside_single_line_block = false;
         current_block = '';
@@ -348,15 +257,19 @@ var dss = ( function () {
     // Create new blocks with custom parsing
     _blocks.forEach( function ( block ) {
 
+      // Store line numbers
+      var from = block.from;
+      var to = block.to;
+
       // Remove extra whitespace
-      block = block.split( '\n' ).filter( function ( line ) {
+      block = block.text.split( '\n' ).filter( function ( line ) {
         return ( _dss.trim( _dss.normalize( line ) ) );
       } ).join( '\n' );
 
       // Split block into lines
       block.split( '\n' ).forEach( function ( line ) {
         if ( _dss.detect( line ) ) {
-          temp = parser( temp, _dss.normalize( line ), block, lines );
+          temp = parser( temp, _dss.normalize( line ), block, lines, from, to, options );
         }
       });
 
@@ -373,33 +286,186 @@ var dss = ( function () {
 
   };
 
+  /*
+   * Parses line
+   *
+   * @param (Num) the line number
+   * @param (Num) number of lines
+   * @param (String) line to parse/check
+   * @return (Boolean) result of parsing
+   */
+  function parser ( temp, line, block, file, from, to, options ) {
+
+    var parts           = line.replace( /.*@/, '' );
+    var index           = indexer( parts, ' ' ) || indexer( parts, '\n' ) || indexer( parts, '\r' ) || parts.length;
+    var name            = _dss.trim( parts.substr( 0, index ) );
+    var output          = {
+      options: options,
+      file: file,
+      name: name,
+      line: {
+        contents: _dss.trim( parts.substr( index ) ),
+        from: block.indexOf( line ),
+        to: block.indexOf( line )
+      },
+      block: {
+        contents: block,
+        from: from,
+        to: to
+      }
+    };
+
+    // find the next instance of a parser (if there is one based on the @ symbol)
+    // in order to isolate the current multi-line parser
+    var nextParserIndex = block.indexOf( '* @', output.line.from + 1 );
+    var markupLength = ( nextParserIndex > -1 ) ? nextParserIndex - output.line.from : block.length;
+    var contents = block.split( '' ).splice( ( output.line.from - 1 ), markupLength ).join( '' );
+    var parserMarker = '@' + name;
+    contents = contents.replace( parserMarker, '' );
+
+    // Redefine output contents to support multiline contents
+    output.line.contents = ( function( contents ) {
+      var ret = [];
+      var lines = contents.split( '\n' );
+
+      lines.forEach( function( line, i ) {
+
+        var pattern = '*';
+        var index = line.indexOf( pattern );
+
+        if ( index > 0 && index < 10 ) {
+          line = line.split( '' ).splice( ( index + pattern.length ), line.length ).join( '' );
+        }
+
+        // Trim whitespace from the the first line in multiline contents
+        if ( i === 0 ) {
+          line = _dss.trim( line );
+        }
+
+        if ( line && line.indexOf( parserMarker ) == -1 ) {
+          ret.push( line );
+        }
+
+      });
+
+      return ret.join( '\n' );
+
+    })( contents );
+
+    line = {};
+    line[ name ] = ( _dss.parsers[ name ] ) ? _dss.parsers[ name ].call( output ) : '';
+
+    if ( temp[ name ] ) {
+      if ( !_dss.isArray( temp[ name ] ) ) {
+        temp[name] = [ temp[ name ] ];
+      }
+      if ( !_dss.isArray( line[ name ] ) ) {
+        temp[ name ].push( line[ name ] );
+      } else {
+        temp[ name ].push( line[ name ][ 0 ] );
+      }
+    } else {
+      temp = _dss.extend( temp, line );
+    }
+    return temp;
+  };
+
+  /*
+   * Get the index of string inside of another
+   */
+  function indexer ( str, find ) {
+    return ( str.indexOf( find ) > 0 ) ? str.indexOf( find ) : false;
+  };
+
+  /*
+   * Comment block
+   */
+  function block () {
+    this._raw = ( comment_text ) ? comment_text : '';
+    this._filename = filename;
+  };
+
+  /*
+   * Check for single-line comment
+   *
+   * @param (String) line to parse/check
+   * @return (Boolean) result of check
+   */
+  function single_line_comment ( line ) {
+    return !!line.match( /^\s*\/\// );
+  };
+
+  /*
+   * Checks for start of a multi-line comment
+   *
+   * @param (String) line to parse/check
+   * @return (Boolean) result of check
+   */
+  function start_multi_line_comment ( line ) {
+    return !!line.match( /^\s*\/\*/ );
+  };
+
+  /*
+   * Check for end of a multi-line comment
+   *
+   * @parse (String) line to parse/check
+   * @return (Boolean) result of check
+   */
+  function end_multi_line_comment ( line ) {
+    if( single_line_comment( line ) ) {
+      return false;
+    }
+    return !!line.match( /.*\*\// );
+  };
+
+  /*
+   * Removes comment identifiers for single-line comments.
+   *
+   * @param (String) line to parse/check
+   * @return (Boolean) result of check
+   */
+  function parse_single_line ( line ) {
+    return line.replace( /\s*\/\//, '' );
+  };
+
+  /*
+   * Remove comment identifiers for multi-line comments.
+   *
+   * @param (String) line to parse/check
+   * @return (Boolean) result of check
+   */
+  function parse_multi_line ( line ) {
+    var cleaned = line.replace( /\s*\/\*/, '' );
+    return cleaned.replace( /\*\//, '' );
+  };
+
   // Return function
   return _dss;
 
 })();
 
-// Describe detection pattern
+// Describe default detection pattern
 dss.detector( function( line ) {
-  if( typeof line !== 'string' ) {
+  if ( typeof line !== 'string' ) {
     return false;
   }
   var reference = line.split( "\n\n" ).pop();
   return !!reference.match( /.*@/ );
 });
 
-// Describe parsing a name
-dss.parser( 'name', function ( i, line, block, file ) {
-  return line;
+// Describe default parsing of a name
+dss.parser( 'name', function () {
+  return this.line.contents;
 });
 
-// Describe parsing a description
-dss.parser( 'description', function ( i, line, block, file ) {
-  return line;
+// Describe default parsing of a description
+dss.parser( 'description', function () {
+  return this.line.contents;
 });
 
-// Describe parsing a state
-dss.parser( 'state', function ( i, line, block, file ) {
-  var state = line.split( ' - ' );
+// Describe default parsing of a state
+dss.parser( 'state', function () {
+  var state = this.line.contents.split( ' - ' );
   return [{
     name: ( state[ 0 ] ) ? dss.trim( state[ 0 ] ) : '',
     escaped: ( state[ 0 ] ) ? dss.trim( state[ 0 ].replace( '.', ' ' ).replace( ':', ' pseudo-class-' ) ) : '',
@@ -407,48 +473,30 @@ dss.parser( 'state', function ( i, line, block, file ) {
   }];
 });
 
-// Describe parsing markup
-dss.parser( 'markup', function ( i, line, block, file, parserName ) {
+// Describe default parsing of a piece markup
+dss.parser( 'markup', function () {
 
-  // find the next instance of a parser (if there is one based on the @ symbol)
-  // in order to isolate the current multi-line parser
-  var nextParserIndex = block.indexOf( '* @', i + 1 );
-  var markupLength = ( nextParserIndex > -1 ) ? nextParserIndex - i : block.length;
-  var markup = block.split( '' ).splice( i, markupLength ).join( '' );
-  var parserMarker = '@' + parserName;
+  // Get the first line of code (which should be the type of markup it's written in)
+  this.line.contents = this.line.contents.split('\n');
+  var type = this.line.contents[ 0 ].toLowerCase();
 
-  markup = ( function( markup ) {
-    var ret = [];
-    var lines = markup.split( '\n' );
+  // Remove first line from contents
+  this.line.contents = this.line.contents.splice( 1, this.line.contents.length ).join( '\n' );
 
-    lines.forEach( function( line ) {
-      var pattern = '*';
-      var index = line.indexOf( pattern );
+  // Render contents with HTML or another parser if passed through options
+  console.log( 'type', type );
+  if ( type && type != 'html' ) {
+    if ( this.options[ this.name ] && typeof this.options[ this.name ][ type ] == 'function' ) {
+      this.options[ this.name ][ type ]( this.line.contents );
+    } else {
+      console.warn( '@' + this.name + ' parser error. Falling back.');
+    }
+  }
 
-      if ( index > 0 && index < 10 ) {
-        line = line.split( '' ).splice( ( index + pattern.length ), line.length ).join( '' );
-      }
-
-      // multiline
-      if ( lines.length <= 2 ) {
-        line = dss.trim( line );
-      }
-
-      if ( line && line.indexOf( parserMarker ) == -1 ) {
-        ret.push( line );
-      }
-
-    });
-
-    return ret.join( '\n' );
-
-  })( markup );
-
-  return {
-    example: markup,
-    escaped: markup.replace( /</g, '&lt;' ).replace( />/g, '&gt;' )
-  };
-
+  return [{
+    example: this.line.contents,
+    escaped: this.line.contents.replace( /</g, '&lt;' ).replace( />/g, '&gt;' )
+  }];
 });
 
 // Module exports
