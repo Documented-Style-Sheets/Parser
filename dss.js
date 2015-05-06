@@ -475,24 +475,6 @@ dss.parser( 'state', function () {
 
 // Describe default parsing of a piece markup
 dss.parser( 'markup', function () {
-
-  // Get the first line of code (which should be the type of markup it's written in)
-  this.line.contents = this.line.contents.split('\n');
-  var type = this.line.contents[ 0 ].toLowerCase();
-
-  // Remove first line from contents
-  this.line.contents = this.line.contents.splice( 1, this.line.contents.length ).join( '\n' );
-
-  // Render contents with HTML or another parser if passed through options
-  console.log( 'type', type );
-  if ( type && type != 'html' ) {
-    if ( this.options[ this.name ] && typeof this.options[ this.name ][ type ] == 'function' ) {
-      this.options[ this.name ][ type ]( this.line.contents );
-    } else {
-      console.warn( '@' + this.name + ' parser error. Falling back.');
-    }
-  }
-
   return [{
     example: this.line.contents,
     escaped: this.line.contents.replace( /</g, '&lt;' ).replace( />/g, '&gt;' )
