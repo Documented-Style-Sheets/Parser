@@ -3,3 +3,4 @@
 .DS_Store?
 /examples/
 test.js
+npm-debug.log

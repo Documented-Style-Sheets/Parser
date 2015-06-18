@@ -319,7 +319,7 @@ var dss = ( function () {
     // in order to isolate the current multi-line parser
     var nextParserIndex = block.indexOf( '* @', output.line.from + 1 );
     var markupLength = ( nextParserIndex > -1 ) ? nextParserIndex - output.line.from : block.length;
-    var contents = block.split( '' ).splice( ( output.line.from - 1 ), markupLength ).join( '' );
+    var contents = block.split( '' ).splice( output.line.from , markupLength ).join( '' );
     var parserMarker = '@' + name;
     contents = contents.replace( parserMarker, '' );
 
@@ -333,7 +333,7 @@ var dss = ( function () {
         var pattern = '*';
         var index = line.indexOf( pattern );
 
-        if ( index > 0 && index < 10 ) {
+        if ( index >= 0 && index < 10 ) {
           line = line.split( '' ).splice( ( index + pattern.length ), line.length ).join( '' );
         }
 
