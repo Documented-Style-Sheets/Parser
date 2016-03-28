@@ -1,5 +1,5 @@
 // DSS Object
-var dss = ( function () {
+var dss = (function () {
 
   // Store reference
   var _dss = function () {};
@@ -182,7 +182,7 @@ var dss = ( function () {
 
     // Options
     options = ( options ) ? options : {};
-    options.preserve_whitespace = !!( options.preserve_whitespace );
+    options.preserve_whitespace = false;
 
     // Setup
     var current_block             = '';
@@ -347,6 +347,12 @@ var dss = ( function () {
         }
 
       });
+
+      // Check for a single line and trim whitespace
+      console.log( lines );
+      if ( lines.length === 1 ) {
+        lines[ 0 ] = _dss.trim( lines[ 0 ] );
+      }
 
       return ret.join( '\n' );
 

@@ -29,11 +29,13 @@
     "test": "nodeunit"
   },
   "dependencies": {
-    "jade": "^1.9.2",
-    "marked": "^0.3.3"
+    "jade": "1.9.2",
+    "marked": "0.3.3",
+    "postcss": "5.0.19",
+    "postcss-js": "0.1.2"
   },
   "devDependencies": {
-    "nodeunit": "^0.9.1"
+    "nodeunit": "0.9.1"
   },
   "peerDependencies": {},
   "keywords": [
