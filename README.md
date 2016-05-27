@@ -1,3 +1,12 @@
+[![Build Status](http://img.shields.io/travis/dsswg/dss.svg?style=flat-square)](https://travis-ci.org/dsswg/dss)
+[![Dependency Status](https://david-dm.org/dsswg/dss/badges.svg?style=flat-square)](https://david-dm.org/dsswg/dss/badges)
+[![devDependency Status](https://david-dm.org/dsswg/dss/badges/dev-status.svg?style=flat-square)](https://david-dm.org/dsswg/dss/badges#info=devDependencies)
+[![Code Climate](http://img.shields.io/codeclimate/github/dsswg/dss.svg?style=flat-square)](https://codeclimate.com/github/dsswg/dss)
+[![npm](https://img.shields.io/npm/v/dss.svg?maxAge=2592000&style=flat-square)](https://www.npmjs.com/package/dss)
+[![npm](https://img.shields.io/npm/dt/dss.svg?maxAge=2592000&style=flat-square)](https://www.npmjs.com/package/dss)
+[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://dsswg.mit-license.org)
+[![Join the chat at https://gitter.im/dsswg/dss](http://img.shields.io/:Gitter-Join Chat-orange.svg?style=flat-square)](https://gitter.im/dsswg/dss)
+
 ![DSS](http://cl.ly/image/2p0C122U0N32/logo.png)
 - **[Official Logo](http://cl.ly/image/2p0C122U0N32/logo.png)**
 - **[NPM Package](https://npmjs.org/package/dss)**
