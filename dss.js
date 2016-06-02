@@ -482,10 +482,10 @@ dss.parser( 'state', function () {
 
 // Describe default parsing of a piece markup
 dss.parser( 'markup', function () {
-  return [{
+  return {
     example: this.line.contents,
     escaped: this.line.contents.replace( /</g, '&lt;' ).replace( />/g, '&gt;' )
-  }];
+  };
 });
 
 // Module exports

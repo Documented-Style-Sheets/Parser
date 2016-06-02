@@ -3,7 +3,7 @@ var fs = require('fs');
 var path = require('path');
 
 exports.testParse = function(test){
-  test.expect(10);
+  test.expect(9);
 
   var fileContents = fs.readFileSync(path.join(__dirname, 'data/button.css'), 'utf8');
   dss.parse(fileContents, {}, function(parsed) {
@@ -18,9 +18,8 @@ exports.testParse = function(test){
     test.equal(block.state[1].name, '.smaller');
     test.equal(block.state[1].description, 'A smaller button');
 
-    test.equal(block.markup.length, 1);
-    test.equal(block.markup[0].example.trim(), '<button>This is a button</button>');
-    test.equal(block.markup[0].escaped.trim(), '&lt;button&gt;This is a button&lt;/button&gt;');
+    test.equal(block.markup.example.trim(), '<button>This is a button</button>');
+    test.equal(block.markup.escaped.trim(), '&lt;button&gt;This is a button&lt;/button&gt;');
     test.done();
   });
 };
