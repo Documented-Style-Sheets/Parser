@@ -350,7 +350,6 @@ var dss = (function () {
       });
 
       // Check for a single line and trim whitespace
-      console.log( lines );
       if ( lines.length === 1 ) {
         lines[ 0 ] = _dss.trim( lines[ 0 ] );
       }
