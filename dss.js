@@ -322,6 +322,7 @@ var dss = (function () {
     var contents = block.split( '' ).splice( output.line.from , markupLength ).join( '' );
     var parserMarker = '@' + name;
     contents = contents.replace( parserMarker, '' );
+    contents = _dss.trim(contents);
 
     // Redefine output contents to support multiline contents
     output.line.contents = ( function( contents ) {
