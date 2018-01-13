@@ -353,7 +353,7 @@ var dss = ( function () {
     })( contents );
 
     line = {};
-    line[ name ] = ( _dss.parsers[ name ] ) ? _dss.parsers[ name ].call( output ) : '';
+    line[ name ] = ( _dss.parsers[ name ] ) ? _dss.parsers[ name ].call( output ) : output.line.contents;
 
     if ( temp[ name ] ) {
       if ( !_dss.isArray( temp[ name ] ) ) {
