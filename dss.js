@@ -1,5 +1,5 @@
 // DSS Object
-var dss = ( function () {
+var dss = (function () {
 
   // Store reference
   var _dss = function () {};
@@ -182,7 +182,7 @@ var dss = ( function () {
 
     // Options
     options = ( options ) ? options : {};
-    options.preserve_whitespace = !!( options.preserve_whitespace );
+    options.preserve_whitespace = false;
 
     // Setup
     var current_block             = '';
@@ -322,11 +322,13 @@ var dss = ( function () {
     var contents = block.split( '' ).splice( output.line.from , markupLength ).join( '' );
     var parserMarker = '@' + name;
     contents = contents.replace( parserMarker, '' );
+    contents = _dss.trim(contents);
 
     // Redefine output contents to support multiline contents
     output.line.contents = ( function( contents ) {
       var ret = [];
       var lines = contents.split( '\n' );
+      var leadingWhiteSpace = ""; 
 
       lines.forEach( function( line, i ) {
 
@@ -337,9 +339,13 @@ var dss = ( function () {
           line = line.split( '' ).splice( ( index + pattern.length ), line.length ).join( '' );
         }
 
-        // Trim whitespace from the the first line in multiline contents
         if ( i === 0 ) {
+          // Trim whitespace from the the first line in multiline contents
+          leadingWhiteSpace = line.split(/[^ \t\r\n]/)[0].length;
           line = _dss.trim( line );
+        } else {
+          // Trim whitespace from proceeding lines to match the depth of the first line.
+          line = line.slice(leadingWhiteSpace);
         }
 
         if ( line && line.indexOf( parserMarker ) == -1 ) {
@@ -347,6 +353,11 @@ var dss = ( function () {
         }
 
       });
+
+      // Check for a single line and trim whitespace
+      if ( lines.length === 1 ) {
+        lines[ 0 ] = _dss.trim( lines[ 0 ] );
+      }
 
       return ret.join( '\n' );
 
@@ -475,10 +486,10 @@ dss.parser( 'state', function () {
 
 // Describe default parsing of a piece markup
 dss.parser( 'markup', function () {
-  return [{
+  return {
     example: this.line.contents,
     escaped: this.line.contents.replace( /</g, '&lt;' ).replace( />/g, '&gt;' )
-  }];
+  };
 });
 
 // Module exports
