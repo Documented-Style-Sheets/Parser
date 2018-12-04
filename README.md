@@ -14,8 +14,8 @@ yarn config set "@bit:registry" "https://node.bitsrc.io/"
 yarn add @bit/wurielle.pristine.dsswg.dss
 ```
 The following PRs have been merged:
-- DSSWG/DSS#79
-- DSSWG/DSS#76
+- [DSSWG/DSS#79](https://github.com/DSSWG/DSS/pull/79)
+- [DSSWG/DSS#76](https://github.com/DSSWG/DSS/pull/76)
 #
 [![Build Status](http://img.shields.io/travis/dsswg/dss.svg?style=flat-square)](https://travis-ci.org/dsswg/dss)
 [![Dependency Status](https://david-dm.org/dsswg/dss/badges.svg?style=flat-square)](https://david-dm.org/dsswg/dss/badges)
