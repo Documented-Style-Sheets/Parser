@@ -1,3 +1,22 @@
+# Fork Note
+This fork exists due to the long inactivity the [DSSWG/DSS](https://github.com/DSSWG/DSS) repository has been receiving. 
+
+Current and future PRs from the [DSSWG/DSS](https://github.com/DSSWG/DSS) repository will be included in this one until development is resumed.
+
+Additionally you can install the latest version of this repository by running:
+```bash
+# If you're using NPM
+npm config set '@bit:registry' https://node.bitsrc.io
+npm i @bit/wurielle.pristine.dsswg.dss
+
+# If you're using Yarn
+yarn config set "@bit:registry" "https://node.bitsrc.io/"
+yarn add @bit/wurielle.pristine.dsswg.dss
+```
+The following PRs have been merged:
+- DSSWG/DSS#79
+- DSSWG/DSS#76
+#
 [![Build Status](http://img.shields.io/travis/dsswg/dss.svg?style=flat-square)](https://travis-ci.org/dsswg/dss)
 [![Dependency Status](https://david-dm.org/dsswg/dss/badges.svg?style=flat-square)](https://david-dm.org/dsswg/dss/badges)
 [![devDependency Status](https://david-dm.org/dsswg/dss/badges/dev-status.svg?style=flat-square)](https://david-dm.org/dsswg/dss/badges#info=devDependencies)
