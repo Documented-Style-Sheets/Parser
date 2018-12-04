@@ -1,12 +1,12 @@
-/*
-* @name Button
-* @description Your standard form button.
-*
-* @state :hover - Highlights when hovering.
-* @state .smaller - A smaller button
-*
-* @custom Some custom info
-*
-* @markup
-*   <button>This is a button</button>
-*/
+/**
+  * @name Button
+  * @description Your standard form button.
+  *
+  * @state :hover - Highlights when hovering.
+  * @state .smaller - A smaller button
+  *
+  * @custom Some custom info
+  *
+  * @markup
+  *   <button>This is a button</button>
+  */

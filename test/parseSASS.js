@@ -6,7 +6,7 @@ var dss   = require( '../dss' );
 // Basic Parsing Stylus
 exports.parseSASS= function ( test ) {
 
-  test.expect( 2 );
+  test.expect( 3 );
 
   var fileContents = fs.readFileSync( path.join( __dirname, 'data/parse.sass' ), 'utf8' );
 
@@ -15,6 +15,7 @@ exports.parseSASS= function ( test ) {
     var block = parsed.blocks[ 0 ];
     test.equal( block.name, 'Button' );
     test.equal( block.description, 'Your standard form button.' );
+    test.equal( block.custom, 'Some custom info' );
     test.done();
 
   });
