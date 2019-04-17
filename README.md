@@ -171,3 +171,4 @@ dss.parser( 'link', function () {
 - [Sublime Text Plugin](https://github.com/sc8696/sublime-css-auto-comments)
 - [UX Recorder](http://github.com/dsswg/dss-recorder)
 - [UX Player](http://github.com/dsswg/dss-player)
+- [SourceJS Plugin](https://github.com/sourcejs/sourcejs-contrib-dss)
