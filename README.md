@@ -7,8 +7,6 @@
 - **[Official Logo](http://cl.ly/image/2p0C122U0N32/logo.png)**
 - **[NPM Package](https://npmjs.org/package/dss)**
 
-[![NPM](https://nodei.co/npm/dss.png?downloadRank=true)](https://npmjs.org/package/dss)  
-
 **DSS**, Documented Style Sheets is a comment guide and parser for CSS, LESS, STYLUS, SASS and SCSS code. This project does static file analysis and parsing to generate an object to be used for generating styleguides.
 
 
