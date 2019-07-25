@@ -1,4 +1,3 @@
-[![Build Status](http://img.shields.io/travis/dsswg/dss.svg?style=flat-square)](https://travis-ci.org/dsswg/dss)
 [![npm](https://img.shields.io/npm/v/dss.svg?maxAge=2592000&style=flat-square)](https://www.npmjs.com/package/dss)
 [![npm](https://img.shields.io/npm/dt/dss.svg?maxAge=2592000&style=flat-square)](https://www.npmjs.com/package/dss)
 [![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://dsswg.mit-license.org)
