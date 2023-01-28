@@ -1,8 +1,8 @@
 {
-  "name": "dss",
+  "name": "@documented-style-sheets/parser",
   "description": "Documented Style Sheets",
   "version": "1.0.5",
-  "homepage": "https://github.com/darcyclarke/dss",
+  "homepage": "https://github.com/Documented-Style-Sheets/Parser",
   "author": {
     "name": "darcyclarke",
     "email": "darcy@darcyclarke.me",
