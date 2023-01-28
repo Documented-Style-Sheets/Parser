@@ -6,6 +6,7 @@ const root = (typeof self === 'object' && self.self === self && self) ||
 
 // DSS Object
 const dss = (function () {
+  
   // Store reference
   const _dss = function () {}
 

@@ -21,12 +21,12 @@
       "url": "https://github.com/Documented-Style-Sheets/Parser/blob/master/LICENSE-MIT"
     }
   ],
-  "main": "dss.js",
+  "main": "index.js",
   "engines": {
     "node": ">= 0.8.0"
   },
   "files": [
-    "dss.js"
+    "index.js"
   ],
   "scripts": {
     "test": "tap",

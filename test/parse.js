@@ -1,7 +1,8 @@
-const dss = require('../dss')
+const dss = require('..')
 const fs = require('fs')
 const path = require('path')
 const tap = require('tap')
+
 const fileContents = fs.readFileSync(path.join(__dirname, 'data/button.css'), 'utf8')
 
 dss.parse(fileContents, {}, function (parsed) {
