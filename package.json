@@ -29,18 +29,18 @@
     "dss.js"
   ],
   "scripts": {
-    "test": "nodeunit",
+    "test": "tap",
     "lint": "eslint ."
   },
   "devDependencies": {
-    "jade": "^1.9.2",
-    "marked": "^0.3.3",
     "eslint": "^8.32.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.6.1",
     "eslint-plugin-promise": "^6.1.1",
-    "nodeunit": "^0.9.1"
+    "jade": "^1.9.2",
+    "marked": "^0.3.3",
+    "tap": "^16.3.4"
   },
   "keywords": [
     "css",
