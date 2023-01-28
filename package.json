@@ -10,37 +10,55 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/darcyclarke/dss"
+    "url": "https://github.com/Documented-Style-Sheets/Parser"
   },
   "bugs": {
-    "url": "https://github.com/darcyclarke/dss/issues"
+    "url": "https://github.com/Documented-Style-Sheets/Parser/issues"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/darcyclarke/dss/blob/master/LICENSE-MIT"
+      "url": "https://github.com/Documented-Style-Sheets/Parser/blob/master/LICENSE-MIT"
     }
   ],
   "main": "dss.js",
   "engines": {
     "node": ">= 0.8.0"
   },
+  "files": [
+    "dss.js"
+  ],
   "scripts": {
-    "test": "nodeunit"
-  },
-  "dependencies": {
-    "jade": "^1.9.2",
-    "marked": "^0.3.3"
+    "test": "nodeunit",
+    "lint": "eslint ."
   },
   "devDependencies": {
+    "jade": "^1.9.2",
+    "marked": "^0.3.3",
+    "eslint": "^8.32.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
     "nodeunit": "^0.9.1"
   },
-  "peerDependencies": {},
   "keywords": [
     "css",
     "dss",
     "styles",
     "docs",
-    "documentation"
+    "documentation",
+    "dodcumented style sheets",
+    "comments",
+    "blocks",
+    "parse",
+    "parser",
+    "parsing",
+    "detection",
+    "static analysis",
+    "sass",
+    "less",
+    "stylus",
+    "scss"
   ]
 }

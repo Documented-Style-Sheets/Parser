@@ -1,20 +1,24 @@
 [![npm](https://img.shields.io/npm/v/dss.svg?maxAge=2592000&style=flat-square)](https://www.npmjs.com/package/dss)
 [![npm](https://img.shields.io/npm/dt/dss.svg?maxAge=2592000&style=flat-square)](https://www.npmjs.com/package/dss)
-[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://dsswg.mit-license.org)
 
-![DSS](http://cl.ly/image/2p0C122U0N32/logo.png)
-- **[Official Logo](http://cl.ly/image/2p0C122U0N32/logo.png)**
-- **[NPM Package](https://npmjs.org/package/dss)**
+> ⚠️ **Warning:** this project has moved on `npmjs.com` from `"dss"` to [`"@documented-style-sheets/parser"`](https://npmjs.org/package/@documented-style-sheets/parser)
 
-**DSS**, Documented Style Sheets is a comment guide and parser for CSS, LESS, STYLUS, SASS and SCSS code. This project does static file analysis and parsing to generate an object to be used for generating styleguides.
+**DSS**, Documented Style Sheets is a general-purpose comment guide and parser (ex. CSS, LESS, STYLUS, SASS, SCSS & JS comments). This project does static file analysis and parsing to generate an object to be used for generating styleguides.
 
 
 ##### Table of Contents
 
+- [Installation](#installation)
 - [Parsing a File](#parsing-a-file)
   - [`dss.detector`](#dssdetector-callback-)
   - [`dss.parser`](#dssparser-name-callback-)
 - [Other Projects](#other-projects)
+
+### Installation
+
+```bash
+npm i @documented-style-sheets/parser
+```
 
 ### Parsing a File
 
@@ -44,20 +48,17 @@ In most cases, you will want to include the **DSS** parser in a build step that 
 
 ```javascript
 // Requirements
-var fs = require( 'fs' );
-var dss = require( 'dss' );
+const fs = require('fs')
+const { parse } = require('@documented-style-sheets/parser')
 
 // Get file contents
-var fileContents = fs.readFileSync( 'styles.css' );
+const fileContents = fs.readFileSync('styles.css')
 
 // Run the DSS Parser on the file contents
-dss.parse( fileContents, {}, function ( parsedObject ) {
-
+parse(fileContents, {}, function (parsedObject) {
   // Output the parsed document
-  console.log( parsedObject );
-
-});
-
+  console.log(parsedObject)
+})
 ````
 
 ##### Example Output
@@ -94,7 +95,7 @@ dss.parse( fileContents, {}, function ( parsedObject ) {
   }
 }
 ````
-#### dss.detector( callback )
+#### dss.detector(\<callback\>)
 
 This method defines the way in which points of interest (ie. variables) are found in lines of text and then, later, parsed. **DSS** dogfoods this API and the default implementation is shown below.
 
@@ -103,18 +104,19 @@ This method defines the way in which points of interest (ie. variables) are foun
 ```javascript
 // Describe default detection pattern
 // Note: the current line, as a string, is passed to this function
-dss.detector( function( line ) {
-  
-  if ( typeof line !== 'string' ) {
-    return false;
+const dss = require('@documented-style-sheets/parser')
+dss.detector(function(line) {
+  if (typeof line !== 'string') {
+    return false
   }
-  var reference = line.split( "\n\n" ).pop();
-  return !!reference.match( /.*@/ );
+  var reference = line.split("\n\n").pop()
+  return !!reference.match(/.*@/)
+})
 
-});
+dss.parse(...)
 ````
 
-#### dss.parser( name, callback )
+#### dss.parser(\<name\>, \<callback\>)
 
 **DSS**, by default, includes 4 parsers for the `name`, `description`, `state` and `markup` of a comment block. You can add to, or override, these defaults by registering a new parser. These defaults also follow a pattern which uses the `@` decorator to identify them. You can modify this behaivour providing a different callback function to `dss.detector()`.
 
@@ -139,23 +141,19 @@ dss.detector( function( line ) {
 
 ```javascript
 // Matches @version
-dss.parser( 'version', function () {
-
+dss.parser('version', function () {
   // Just returns the lines contents
-  return this.line.contents;
-
-});
+  return this.line.contents
+})
 ````
 
 ```javascript
-dss.parser( 'link', function () {
-
+dss.parser('link', function () {
   // Replace link with HTML wrapped version
-  var exp = /(b(https?|ftp|file)://[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
-  this.line.contents.replace(exp, "<a href='$1'>$1</a>");
-  return line;
-   
-});
+  const exp = /(b(https?|ftp|file)://[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig
+  this.line.contents.replace(exp, "<a href='$1'>$1</a>")
+  return line
+})
 ````
 
 ### Other Projects
